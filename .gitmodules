@@ -1,0 +1,3 @@
+[submodule "ds-cmake"]
+	path = ds-cmake
+	url = ../ds-cmake
