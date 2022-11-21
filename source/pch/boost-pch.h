@@ -17,3 +17,4 @@
 
 namespace po = boost::program_options;
 namespace pt = boost::property_tree;
+namespace json = boost::json;

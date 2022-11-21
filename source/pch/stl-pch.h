@@ -13,6 +13,7 @@
 #include <deque>
 #include <exception>
 #include <filesystem>
+#include <format>
 #include <fstream>
 #include <functional>
 #include <iomanip>
@@ -40,3 +41,5 @@
 #include <vector>
 
 namespace fs = std::filesystem;
+
+#define ds_assert assert
