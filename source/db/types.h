@@ -17,10 +17,17 @@ struct competition final
 struct group final
 {
     int64_t id;
-    std::string id_name;
+    int64_t group_name_id;
     int64_t min_year;
     int64_t max_year;
     bool is_solo;
+};
+
+struct group_name final
+{
+    int64_t id;
+    std::string name;
+    std::string title;
 };
 
 struct couple final
@@ -40,6 +47,7 @@ struct result final
     int64_t id;
     int64_t competition_id;
     int64_t group_id;
+    int64_t couple_id;
     int64_t place_start;
     int64_t place_end;
 };

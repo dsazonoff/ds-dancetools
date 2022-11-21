@@ -20,7 +20,7 @@ private:
     };
 
 public:
-    using result_cb = std::function<void(db::competition, const db::group, db::couple, db::result)>;
+    using result_cb = std::function<void(db::competition, db::group, db::group_name, db::couple, db::result)>;
 
 public:
     ranking_parser();

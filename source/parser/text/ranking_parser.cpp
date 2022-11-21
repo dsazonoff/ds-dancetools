@@ -111,7 +111,7 @@ std::map<std::string, db::group> ranking_parser::parse_groups(const json::value 
             const auto min_year = obj.at("min_year").as_int64();
             const auto max_year = obj.at("max_year").as_int64();
             const auto is_solo = obj.at("solo").as_bool();
-            g.emplace(id_name, db::group{0, id_name, min_year, max_year, is_solo});
+            g.emplace(id_name, db::group{0, 0, min_year, max_year, is_solo});
         }
     }
     catch (const std::exception & ex)
@@ -122,7 +122,6 @@ std::map<std::string, db::group> ranking_parser::parse_groups(const json::value 
     return g;
 }
 
-
 void ranking_parser::parse_results_file(const fs::path & path)
 {
     std::cout << "Parsing file: " << path.generic_string() << std::endl;
@@ -130,6 +129,7 @@ void ranking_parser::parse_results_file(const fs::path & path)
     const auto group_it = _ctx.groups.find(group_id);
     if (group_it == _ctx.groups.end())
         throw std::logic_error{std::format("Group is not in manifest: {}", group_id)};
+    const auto& group_name = group_it->first;
     _ctx.group = group_it->second;
 
     std::ifstream is{path.generic_string()};
@@ -140,7 +140,8 @@ void ranking_parser::parse_results_file(const fs::path & path)
     for (std::string line; !!std::getline(is, line);)
     {
         auto [couple, result] = parse_line(line);
-        _result_callback(_ctx.competition, _ctx.group, std::move(couple), std::move(result));
+        if (_result_callback)
+            _result_callback(_ctx.competition, _ctx.group, db::group_name{0, group_name, std::string{}}, std::move(couple), result);
     }
 }
 
@@ -155,7 +156,7 @@ std::tuple<db::couple, db::result> ranking_parser::parse_line(const std::string 
         std::vector<std::string> words;
         boost::split(words, text, boost::is_any_of(" .-"));
 
-        switch(words.size())
+        switch (words.size())
         {
         case 2:
             r.place_start = boost::lexical_cast<int64_t>(words[0]);
@@ -213,7 +214,7 @@ std::tuple<db::couple, db::result> ranking_parser::parse_line(const std::string 
         result = parse_place(place_text);
         couple = parse_names(couple_text);
     }
-    catch (const std::logic_error &ex)
+    catch (const std::logic_error & ex)
     {
         throw std::logic_error{std::format("Could not parse line: {} - {}\nFile: {}", line, ex.what(), _ctx.file.generic_string())};
     }
