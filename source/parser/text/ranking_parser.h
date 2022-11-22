@@ -20,13 +20,10 @@ private:
     };
 
 public:
-    using result_cb = std::function<void(db::competition, db::group, db::group_name, db::couple, db::result)>;
-
-public:
     ranking_parser();
 
     void set_root_dir(fs::path dir);
-    void set_callback(result_cb callback);
+    void set_callback(db::cb::result callback);
     void parse();
 
 private:
@@ -39,7 +36,7 @@ private:
 private:
     fs::path _root = ".";
     context _ctx;
-    result_cb _result_callback;
+    db::cb::result _result_callback;
 };
 
 } // namespace ds::parser

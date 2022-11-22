@@ -52,4 +52,11 @@ struct result final
     int64_t place_end;
 };
 
+
+namespace cb
+{
+using group_name = std::function<void(db::group_name)>;
+using result = std::function<void(db::competition, db::group, db::group_name, db::couple, db::result)>;
 }
+
+} // namespace ds::db

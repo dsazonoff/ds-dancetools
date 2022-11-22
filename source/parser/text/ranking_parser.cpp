@@ -22,7 +22,7 @@ void ranking_parser::set_root_dir(fs::path dir)
     _root = std::move(dir);
 }
 
-void ranking_parser::set_callback(result_cb callback)
+void ranking_parser::set_callback(db::cb::result callback)
 {
     _result_callback = std::move(callback);
 }

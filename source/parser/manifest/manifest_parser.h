@@ -9,18 +9,15 @@ namespace ds::parser
 class manifest_parser final
 {
 public:
-    using group_cb = std::function<void(db::group_name)>;
-
-public:
     manifest_parser();
 
     void set_root_dir(fs::path dir);
-    void set_group_callback(group_cb callback);
+    void set_group_callback(db::cb::group_name callback);
     void parse();
 
 private:
     fs::path _root = ".";
-    group_cb _group_callback;
+    db::cb::group_name _group_callback;
 };
 
 } // namespace ds::parser

@@ -24,7 +24,7 @@ void manifest_parser::set_root_dir(fs::path dir)
     _root = std::move(dir);
 }
 
-void manifest_parser::set_group_callback(group_cb callback)
+void manifest_parser::set_group_callback(db::cb::group_name callback)
 {
     _group_callback = std::move(callback);
 }
@@ -32,6 +32,7 @@ void manifest_parser::set_group_callback(group_cb callback)
 void manifest_parser::parse()
 {
     const auto & manifest_path = _root / s_manifest;
+    std::cout << "Reading manifest: " << manifest_path.generic_string() << std::endl;
 
     try
     {
