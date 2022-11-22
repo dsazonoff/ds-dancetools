@@ -1,6 +1,6 @@
 #pragma once
 
-#include "base_logic.h"
+#include "db/base_logic.h"
 
 namespace ds::db
 {

@@ -31,7 +31,7 @@ private:
     db::competition parse_competition(const json::value & manifest) const;
     std::map<std::string, db::group> parse_groups(const json::value & manifest) const;
     void parse_results_file(const fs::path & path);
-    std::tuple<db::couple, db::result> parse_line(const std::string& line) const;
+    std::tuple<std::optional<db::dancer>, std::optional<db::dancer>, db::result> parse_line(const std::string& line) const;
 
 private:
     fs::path _root = ".";

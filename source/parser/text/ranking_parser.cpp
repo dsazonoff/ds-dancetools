@@ -139,18 +139,15 @@ void ranking_parser::parse_results_file(const fs::path & path)
     _ctx.file = path;
     for (std::string line; !!std::getline(is, line);)
     {
-        auto [couple, result] = parse_line(line);
+        auto [d1, d2, result] = parse_line(line);
         if (_result_callback)
-            _result_callback(_ctx.competition, _ctx.group, db::group_name{0, group_name, std::string{}}, std::move(couple), result);
+            _result_callback(_ctx.competition, _ctx.group, db::group_name{0, group_name, std::string{}}, std::move(d1), std::move(d2), result);
     }
 }
 
-std::tuple<db::couple, db::result> ranking_parser::parse_line(const std::string & line) const
+std::tuple<std::optional<db::dancer>, std::optional<db::dancer>, db::result> ranking_parser::parse_line(const std::string & line) const
 {
-    db::couple couple = {};
-    db::result result = {};
-
-    const auto parse_place = [](const std::string & text)
+    static const auto parse_place = [](const std::string & text)
     {
         db::result r = {};
         std::vector<std::string> words;
@@ -172,9 +169,11 @@ std::tuple<db::couple, db::result> ranking_parser::parse_line(const std::string 
         return r;
     };
 
-    const auto parse_names = [](const std::string & text)
+    static const auto parse_names = [](const std::string & text)
     {
-        db::couple c = {};
+        std::optional<db::dancer> d1 = db::dancer{};
+        std::optional<db::dancer> d2 = db::dancer{};
+
         std::vector<std::string> words;
         boost::split(words, text, boost::is_any_of(" /"));
         if (words.size() != 6)
@@ -184,20 +183,26 @@ std::tuple<db::couple, db::result> ranking_parser::parse_line(const std::string 
                 if (w == "-")
                     w.clear();
             });
-        c.name1 = std::move(words[0]);
-        c.surname1 = std::move(words[1]);
-        c.name2 = std::move(words[4]);
-        c.surname2 = std::move(words[5]);
-        if (c.name1.empty() || c.name2.empty())
+
+        static const auto build_name = [](std::initializer_list<std::string> list)
         {
-            c.is_solo = true;
-            if (c.name1.empty())
-            {
-                c.name1 = std::move(c.name2);
-                c.surname1 = std::move(c.surname2);
-            }
-        }
-        return c;
+            std::vector<std::string> v;
+            for ( const auto& w : list)
+                if (!w.empty())
+                    v.push_back(w);
+            return boost::join(v, " ");
+        };
+
+        d1->name = build_name({words[0], words[1]});
+        d2->name = build_name({words[4], words[5]});
+
+        if (d1->name.empty())
+            d1 = std::nullopt;
+        if (d2->name.empty())
+            d2 = std::nullopt;
+        ds_assert(d1.has_value() || d2.has_value());
+
+        return std::tuple(d1, d2);
     };
 
     try
@@ -210,16 +215,15 @@ std::tuple<db::couple, db::result> ranking_parser::parse_line(const std::string 
 
         const auto & place_text = tokens[0];
         const auto & couple_text = tokens[2];
+        const auto result = parse_place(place_text);
+        auto [d1, d2] = parse_names(couple_text);
 
-        result = parse_place(place_text);
-        couple = parse_names(couple_text);
+        return std::tuple{std::move(d1), std::move(d2), result};
     }
     catch (const std::logic_error & ex)
     {
         throw std::logic_error{std::format("Could not parse line: {} - {}\nFile: {}", line, ex.what(), _ctx.file.generic_string())};
     }
-
-    return std::tuple{couple, result};
 }
 
 

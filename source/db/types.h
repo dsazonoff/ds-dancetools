@@ -4,6 +4,8 @@
 namespace ds::db
 {
 
+// Data types
+
 struct competition final
 {
     int64_t id;
@@ -30,16 +32,20 @@ struct group_name final
     std::string title;
 };
 
-struct couple final
+struct dancer final
 {
     int64_t id;
-    int64_t bdsa_id1;
-    std::string name1;
-    std::string surname1;
-    int64_t bdsa_id2;
-    std::string name2;
-    std::string surname2;
-    bool is_solo;
+    int64_t bdsa_id;
+    std::string name;
+    int64_t birthday;
+};
+
+struct couple final
+{
+    int64_t id = {};
+    std::optional<int64_t> dancer_id1;
+    std::optional<int64_t> dancer_id2;
+    bool is_solo = {};
 };
 
 struct result final
@@ -53,10 +59,11 @@ struct result final
 };
 
 
+// Callbacks
 namespace cb
 {
 using group_name = std::function<void(db::group_name)>;
-using result = std::function<void(db::competition, db::group, db::group_name, db::couple, db::result)>;
+using result = std::function<void(db::competition, db::group, db::group_name, std::optional<db::dancer>, std::optional<db::dancer>, db::result)>;
 }
 
 } // namespace ds::db

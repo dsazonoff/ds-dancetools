@@ -9,7 +9,7 @@
     {
       "id": "juv2-solo",
       "min_year": 2011,
-      "max_year": 0,
+      "max_year": 2012,
       "solo": true
     },
     {
@@ -21,7 +21,7 @@
     {
       "id": "juv2-couples",
       "min_year": 2011,
-      "max_year": 0,
+      "max_year": 2012,
       "solo": false
     }
   ],

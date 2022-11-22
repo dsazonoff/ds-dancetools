@@ -36,15 +36,21 @@ inline auto make_db(const std::string & path)
             make_column("points_scale",     &competition::points_scale)
             ),
 
+        make_table("dancers",
+            make_column("id",               &dancer::id,            autoincrement(), primary_key()),
+            make_column("bdsa_id",          &dancer::bdsa_id),
+            make_column("name",             &dancer::name),
+            make_column("birthday",         &dancer::birthday)
+            ),
+
         make_table("couples",
             make_column("id",               &couple::id,            autoincrement(), primary_key()),
-            make_column("bdsa_id1",         &couple::bdsa_id1),
-            make_column("name1",            &couple::name1),
-            make_column("surname1",         &couple::surname1),
-            make_column("bdsa_id2",         &couple::bdsa_id2),
-            make_column("name2",            &couple::name2),
-            make_column("surname2",         &couple::surname2),
-            make_column("is_solo",          &couple::is_solo)
+            make_column("dancer_id1",       &couple::dancer_id1),
+            make_column("dancer_id2",       &couple::dancer_id2),
+            make_column("is_solo",          &couple::is_solo),
+
+            foreign_key(&couple::dancer_id1)        .references(&dancer::id),
+            foreign_key(&couple::dancer_id2)        .references(&dancer::id)
             ),
 
         make_table("results",

@@ -2,8 +2,8 @@
 // PVS-Studio Static Code Analyzer for C, C++, C#, and Java: http://www.viva64.com
 
 #include "db/db.h"
-#include "db/logic/manifest.h"
-#include "db/logic/ranking.h"
+#include "db/populate/manifest.h"
+#include "db/populate/ranking.h"
 #include "parser/manifest/manifest_parser.h"
 #include "parser/text/ranking_parser.h"
 
