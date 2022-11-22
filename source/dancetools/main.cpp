@@ -4,6 +4,7 @@
 #include "db/db.h"
 #include "db/populate/manifest.h"
 #include "db/populate/ranking.h"
+#include "db/calculate/bac/bac.h"
 #include "parser/manifest/manifest_parser.h"
 #include "parser/text/ranking_parser.h"
 
@@ -29,6 +30,11 @@ int main()
             p.set_root_dir("data/input/text/become-a-champion");
             p.set_callback(ranking.callback());
             p.parse();
+        }
+
+        {
+            ds::db::bac b{db};
+            b.evaluate(20220101, 20221231);
         }
     }
     catch (const std::exception & ex)

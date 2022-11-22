@@ -7,6 +7,8 @@
 namespace ds::db
 {
 
+using namespace sqlite_orm;
+
 bac::bac(const std::shared_ptr<db> & db)
     : base_logic{db}
 {
@@ -14,6 +16,79 @@ bac::bac(const std::shared_ptr<db> & db)
 
 void bac::evaluate(int64_t start_date, int64_t end_date)
 {
+    _ctx = {};
+    _ctx.competitions = _db.get_all<competition>(
+        where(
+            c(&competition::start_date) >= start_date
+            and c(&competition::end_date) <= end_date));
+    _ctx.groups = _db.get_all<group>();
+
+    for (const auto & comp : _ctx.competitions)
+        proceed_competition(comp);
+}
+
+void bac::proceed_competition(const competition & comp)
+{
+    _ctx.competition = comp;
+    for (const auto & group : _ctx.groups)
+        proceed_group(group);
+}
+
+void bac::proceed_group(const group & gr)
+{
+    _ctx.group = gr;
+    const auto & results = _db.get_all<result>(
+        where(
+            c(&result::competition_id) == _ctx.competition.id
+            and c(&result::group_id) == _ctx.group.id),
+        order_by(&result::place_start).asc());
+    if (results.empty())
+        return;
+
+    ds_assert(results.begin()->place_start == 1);
+    ds_assert(results.rbegin()->place_start == static_cast<int64_t>(results.size()));
+
+    constexpr const int n_places = 3;
+    const auto n_results = results.size();
+    const auto amount = static_cast<size_t>(std::ceil(static_cast<double>(n_results) / n_places));
+    size_t first_index = 0;
+    for (size_t place = 1; place <= n_places; ++place)
+    {
+        auto last_index = std::min(first_index + amount, n_results) - 1;
+        for (auto index = last_index + 1; index < n_results; ++index)
+        {
+            const auto equal_results = results[index].place_start == results[last_index].place_start
+                && results[index].place_end == results[last_index].place_end;
+            if (!equal_results)
+                break;
+            last_index = index;
+        }
+
+        const auto stars = std::round(static_cast<double>(n_places - place + 1) * _ctx.competition.points_scale);
+        for (auto i = first_index; i <= last_index; ++i)
+            proceed_result(results[i], place, stars);
+
+        first_index = last_index + 1;
+        if (first_index >= results.size())
+            break;
+    }
+}
+
+void bac::proceed_result(const result & r, size_t place, double stars)
+{
+    const auto & b_results = _db.get_all<bac_result>(
+        where(
+            c(&bac_result::competition_id) == _ctx.competition.id
+            and c(&bac_result::group_id) == _ctx.group.id
+            and c(&bac_result::couple_id) == r.couple_id));
+    bac_result br = {
+        0,
+        _ctx.competition.id,
+        _ctx.group.id,
+        r.couple_id,
+        static_cast<int64_t>(place),
+        stars};
+    update_or_insert(b_results, br);
 }
 
 } // namespace ds::db

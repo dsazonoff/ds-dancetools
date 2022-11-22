@@ -85,17 +85,24 @@ void ranking::add_dancer(std::optional<dancer> & d)
 
 void ranking::add_couple(couple & cpl)
 {
-    const auto & couples = _db.get_all<couple>(
-        where(
-            (c(&couple::dancer_id1) == cpl.dancer_id1
-                and c(&couple::dancer_id2) == cpl.dancer_id2
-                and c(&couple::is_solo) == false)
-            or (c(&couple::dancer_id1) == cpl.dancer_id1
-                and is_null(&couple::dancer_id2)
-                and c(&couple::is_solo) == true)
-            or (is_null(&couple::dancer_id1)
-                and c(&couple::dancer_id2) == cpl.dancer_id2
-                and c(&couple::is_solo) == true)));
+    const auto & couples = [&]()
+    {
+        if (cpl.is_solo)
+            return _db.get_all<couple>(
+                where(
+                    (c(&couple::dancer_id1) == cpl.dancer_id1
+                        and is_null(&couple::dancer_id2)
+                        and c(&couple::is_solo) == true)
+                    or (is_null(&couple::dancer_id1)
+                        and c(&couple::dancer_id2) == cpl.dancer_id2
+                        and c(&couple::is_solo) == true)));
+        else
+            return _db.get_all<couple>(
+                where(
+                    (c(&couple::dancer_id1) == cpl.dancer_id1
+                        and c(&couple::dancer_id2) == cpl.dancer_id2
+                        and c(&couple::is_solo) == false)));
+    }();
     get_or_insert(couples, cpl);
 }
 
@@ -106,14 +113,7 @@ void ranking::add_result(result & r)
             c(&result::competition_id) == r.competition_id
             and c(&result::group_id) == r.group_id
             and c(&result::couple_id) == r.couple_id));
-    ds_assert(results.size() <= 1);
-    if (!results.empty())
-    {
-        //        r.id = results[0].id;
-        //        _db.update(r);
-        return;
-    }
-    r.id = _db.insert(r);
+    update_or_insert(results, r);
 }
 
 

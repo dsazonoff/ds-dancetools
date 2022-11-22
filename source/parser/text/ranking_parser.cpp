@@ -166,6 +166,9 @@ std::tuple<std::optional<db::dancer>, std::optional<db::dancer>, db::result> ran
         default:
             throw std::logic_error{"place"};
         }
+        if (r.place_start > r.place_end)
+            throw std::logic_error{"Invalid place"};
+
         return r;
     };
 

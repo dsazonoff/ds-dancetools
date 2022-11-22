@@ -12,6 +12,8 @@ public:
 
     template<typename C, typename R>
     void get_or_insert(const C & container, R & record);
+    template<typename C, typename R>
+    void update_or_insert(const C & container, R & record);
 
 protected:
     db::db_t & _db;
@@ -29,5 +31,19 @@ void base_logic::get_or_insert(const C & container, R & record)
         ? _db.insert(record)
         : container[0].id;
 }
+
+template<typename C, typename R>
+void base_logic::update_or_insert(const C & container, R & record)
+{
+    ds_assert(container.size() <= 1);
+    if (!container.empty())
+    {
+        record.id = container[0].id;
+        _db.update(record);
+        return;
+    }
+    record.id = _db.insert(record);
+}
+
 
 } // namespace ds::db

@@ -24,7 +24,7 @@ inline auto make_db(const std::string & path)
             make_column("max_year",         &group::max_year),
             make_column("is_solo",          &group::is_solo),
 
-            foreign_key(&group::group_name_id)  .references(&group_name::id)
+            foreign_key(&group::group_name_id)          .references(&group_name::id)
             ),
 
         make_table("competitions",
@@ -49,8 +49,8 @@ inline auto make_db(const std::string & path)
             make_column("dancer_id2",       &couple::dancer_id2),
             make_column("is_solo",          &couple::is_solo),
 
-            foreign_key(&couple::dancer_id1)        .references(&dancer::id),
-            foreign_key(&couple::dancer_id2)        .references(&dancer::id)
+            foreign_key(&couple::dancer_id1)            .references(&dancer::id),
+            foreign_key(&couple::dancer_id2)            .references(&dancer::id)
             ),
 
         make_table("results",
@@ -61,9 +61,22 @@ inline auto make_db(const std::string & path)
             make_column("place_start",      &result::place_start),
             make_column("place_end",        &result::place_end),
 
-            foreign_key(&result::competition_id)    .references(&competition::id),
-            foreign_key(&result::group_id)          .references(&group::id),
-            foreign_key(&result::couple_id)         .references(&couple::id)
+            foreign_key(&result::competition_id)        .references(&competition::id),
+            foreign_key(&result::group_id)              .references(&group::id),
+            foreign_key(&result::couple_id)             .references(&couple::id)
+            ),
+
+        make_table("bac_results",
+            make_column("id",               &bac_result::id,             autoincrement(), primary_key()),
+            make_column("competition_id",   &bac_result::competition_id),
+            make_column("group_id",         &bac_result::group_id),
+            make_column("couple_id",        &bac_result::couple_id),
+            make_column("place",            &bac_result::place),
+            make_column("stars",            &bac_result::stars),
+
+            foreign_key(&bac_result::competition_id)    .references(&competition::id),
+            foreign_key(&bac_result::group_id)          .references(&group::id),
+            foreign_key(&bac_result::couple_id)         .references(&couple::id)
             )
 
     );
