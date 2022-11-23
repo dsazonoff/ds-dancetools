@@ -4,7 +4,6 @@
 
 #include "hugo.h"
 
-#include "db/utils.h"
 #include "fmt.h"
 #include "utils/json.h"
 
@@ -69,7 +68,7 @@ void hugo::export_passed(const fs::path & path, int64_t start_date, int64_t end_
         throw std::logic_error{std::format("Could not write file: {}", path.generic_string())};
 
     fmt f{os};
-    
+
     f.yaml_header(_title, _root_url, "", _banner)
         .h2("Список участников, допущенных к \"Альянс Трофи\"")
         .h5(fmt::url("Положение о соревнованиях серии Гран-при \"Стань чемпионом!\"", _rules));
