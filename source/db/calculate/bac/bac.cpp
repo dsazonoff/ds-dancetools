@@ -52,10 +52,12 @@ void bac::proceed_group(const group & gr)
 
     constexpr const size_t n_places = 3;
     const auto n_results = results.size();
-    const auto amount = static_cast<size_t>(std::ceil(static_cast<double>(n_results) / n_places));
     size_t first_index = 0;
     for (size_t place = 1; place <= n_places; ++place)
     {
+        const auto amount = static_cast<size_t>(std::ceil(
+            static_cast<double>(n_results - first_index) /
+            static_cast<double>(n_places - place + 1)));
         auto last_index = std::min(first_index + amount, n_results) - 1;
         for (auto index = last_index + 1; index < n_results; ++index)
         {
