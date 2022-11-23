@@ -25,6 +25,8 @@ void bac::evaluate(int64_t start_date, int64_t end_date)
 
     for (const auto & comp : _ctx.competitions)
         proceed_competition(comp);
+
+    update_stars(start_date, end_date);
 }
 
 void bac::proceed_competition(const competition & comp)
@@ -48,7 +50,7 @@ void bac::proceed_group(const group & gr)
     ds_assert(results.begin()->place_start == 1);
     ds_assert(results.rbegin()->place_start == static_cast<int64_t>(results.size()));
 
-    constexpr const int n_places = 3;
+    constexpr const size_t n_places = 3;
     const auto n_results = results.size();
     const auto amount = static_cast<size_t>(std::ceil(static_cast<double>(n_results) / n_places));
     size_t first_index = 0;
@@ -76,19 +78,74 @@ void bac::proceed_group(const group & gr)
 
 void bac::proceed_result(const result & r, size_t place, double stars)
 {
-    const auto & b_results = _db.get_all<bac_result>(
-        where(
-            c(&bac_result::competition_id) == _ctx.competition.id
-            and c(&bac_result::group_id) == _ctx.group.id
-            and c(&bac_result::couple_id) == r.couple_id));
-    bac_result br = {
-        0,
-        _ctx.competition.id,
-        _ctx.group.id,
-        r.couple_id,
-        static_cast<int64_t>(place),
-        stars};
-    update_or_insert(b_results, br);
+    const auto & cpl = _db.get<couple>(r.couple_id);
+    for (const auto & d : {cpl.dancer_id1, cpl.dancer_id2})
+    {
+        if (!d.has_value())
+            continue;
+
+        const auto & b_results = _db.get_all<bac_result>(
+            where(
+                c(&bac_result::competition_id) == _ctx.competition.id
+                and c(&bac_result::group_id) == _ctx.group.id
+                and c(&bac_result::dancer_id) == d.value()));
+        bac_result br = {
+            0,
+            _ctx.competition.id,
+            _ctx.group.id,
+            d.value(),
+            static_cast<int64_t>(place),
+            stars};
+        update_or_insert(b_results, br);
+    }
+}
+
+void bac::update_stars(int64_t start_date, int64_t end_date)
+{
+    for (const auto & comp : _ctx.competitions)
+    {
+        _ctx.competition = comp;
+        for (const auto & group : _ctx.groups)
+        {
+            _ctx.group = group;
+            const auto & all_results = _db.get_all<bac_result>(
+                where(
+                    c(&bac_result::competition_id) == _ctx.competition.id
+                    and c(&bac_result::group_id) == _ctx.group.id));
+            for (const auto & r : all_results)
+            {
+                const auto & d = _db.get<dancer>(r.dancer_id);
+                const auto & b_stars = _db.get_all<bac_stars>(
+                    where(
+                        c(&bac_stars::group_id) == _ctx.group.id
+                        and c(&bac_stars::dancer_id) == d.id));
+                ds_assert(b_stars.size() <= 1);
+                bac_stars b_s = {
+                    0,
+                    group.id,
+                    d.id,
+                    0.0,
+                    start_date,
+                    end_date};
+
+                if (b_stars.empty())
+                    b_s.id = _db.insert(b_s);
+                else
+                    b_s = b_stars[0];
+
+                const auto & results = _db.get_all<bac_result>(
+                    where(
+                        c(&bac_result::competition_id) == _ctx.competition.id
+                        and c(&bac_result::group_id) == _ctx.group.id
+                        and c(&bac_result::dancer_id) == d.id));
+                const auto stars = std::accumulate(results.begin(), results.end(), 0.0, [](double v, const bac_result& b_r){
+                  return v + b_r.stars;
+                });
+                b_s.stars = stars;
+                _db.update(b_s);
+            }
+        }
+    }
 }
 
 } // namespace ds::db

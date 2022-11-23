@@ -7,6 +7,8 @@
 #include "db/calculate/bac/bac.h"
 #include "parser/manifest/manifest_parser.h"
 #include "parser/text/ranking_parser.h"
+#include "export/hugo/bac/hugo.h"
+
 
 int main()
 {
@@ -33,8 +35,16 @@ int main()
         }
 
         {
-            ds::db::bac b{db};
+            db::bac b{db};
             b.evaluate(20220101, 20221231);
+        }
+
+        {
+            exp::hugo::hugo h{db};
+            h.set_output_dir("../sportdance-by/content/pages/db");
+            h.set_suffix("become-a-champion");
+            h.set_manifest("data/input/text/become-a-champion/hugo-2022.json");
+            h.export_all(20220000, 20230000);
         }
     }
     catch (const std::exception & ex)

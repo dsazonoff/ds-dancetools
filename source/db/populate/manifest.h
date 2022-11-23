@@ -6,7 +6,7 @@ namespace ds::db
 {
 
 class manifest final
-    : public base_logic
+    : private base_logic
 {
 public:
     explicit manifest(const std::shared_ptr<db> & db);

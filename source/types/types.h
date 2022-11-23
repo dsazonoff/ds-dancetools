@@ -63,9 +63,19 @@ struct bac_result final
     int64_t id;
     int64_t competition_id;
     int64_t group_id;
-    int64_t couple_id;
+    int64_t dancer_id;
     int64_t place;
     double stars;
+};
+
+struct bac_stars final
+{
+    int64_t id;
+    int64_t group_id;
+    int64_t dancer_id;
+    double stars;
+    int64_t start_date;
+    int64_t end_date;
 };
 
 

@@ -44,7 +44,7 @@ void ranking_parser::parse_results_dir(const fs::path & results_dir)
 {
     _ctx.working_dir = _root / results_dir;
     const auto & manifest_path = _ctx.working_dir / s_manifest;
-    std::cout << "Reading manifest: " << manifest_path.generic_string() << std::endl;
+    std::cout << std::format("Reading manifest: {}\n", manifest_path.generic_string());
     _ctx.manifest = utils::read_json(manifest_path);
     _ctx.competition = parse_competition(_ctx.manifest);
     _ctx.groups = parse_groups(_ctx.manifest);
@@ -124,7 +124,7 @@ std::map<std::string, db::group> ranking_parser::parse_groups(const json::value 
 
 void ranking_parser::parse_results_file(const fs::path & path)
 {
-    std::cout << "Parsing file: " << path.generic_string() << std::endl;
+    std::cout << std::format("Parsing file: {}\n", path.generic_string());
     const auto & group_id = path.stem().generic_string();
     const auto group_it = _ctx.groups.find(group_id);
     if (group_it == _ctx.groups.end())

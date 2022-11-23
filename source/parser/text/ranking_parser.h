@@ -1,6 +1,6 @@
 #pragma once
 
-#include "db/types.h"
+#include "types/types.h"
 
 
 namespace ds::parser
