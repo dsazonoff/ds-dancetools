@@ -93,10 +93,22 @@ fmt & fmt::table_footer()
 
 fmt & fmt::couple(const std::string & name1, double stars1, const std::string & name2, double stars2)
 {
-//    std::stringstream ss;
-//    ss << std::fixed << std::setprecision(precision) << "|" << m_surname << " " << m_name << "|&nbsp;|" << m_stars << "| |" << f_surname << " " << f_name << "|&nbsp;|" << f_stars << "|\n";
     _os << std::format("|{}|&nbsp;|{}| |{}|&nbsp;|{}|\n", name1, stars1, name2, stars2);
 
+    return *this;
+}
+
+fmt & fmt::dancers_header()
+{
+    _os << "| Фамилия Имя | &nbsp;&nbsp;&nbsp; | Звёзды |\n";
+    _os << "|:--|-|:--:|\n";
+
+    return *this;
+}
+
+fmt & fmt::dancer(const std::string & name, double stars)
+{
+    _os << std::format("|{}|&nbsp;|{}|\n", name, stars);
     return *this;
 }
 

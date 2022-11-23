@@ -122,7 +122,7 @@ void hugo::export_passed(const fs::path & path, int64_t start_date, int64_t end_
             f.h4(n.title)
                 .couples_header();
 
-            for(const auto & it : couple_sorted)
+            for (const auto & it : couple_sorted)
             {
                 const auto & [d1, b_s1, d2, b_s2] = it.second;
                 const auto stars = std::max(b_s1.stars, b_s2.stars);
@@ -134,6 +134,48 @@ void hugo::export_passed(const fs::path & path, int64_t start_date, int64_t end_
     }
 
     // Solo
+    {
+        f.h3("Соло");
+
+        for (const auto & g : groups)
+        {
+            const auto & n = _db.get<db::group_name>(g.group_name_id);
+            if (!_solo_groups.contains(n.name))
+                continue;
+
+            const auto & all_stars = _db.get_all<db::bac_stars>(
+                where(
+                    c(&db::bac_stars::group_id) == g.id
+                    and c(&db::bac_stars::start_date) >= start_date
+                    and c(&db::bac_stars::end_date) <= end_date));
+            if (all_stars.empty())
+                continue;
+            const auto star_ids = db::utils::ids(all_stars);
+
+            const auto & dancers = _db.get_all<db::dancer>(
+                where(
+                    in(&db::dancer::id, star_ids)));
+
+            std::map<std::string, std::tuple<db::dancer, db::bac_stars>> dancers_sorted;
+            for (const auto & d : dancers)
+            {
+                const auto & b_s = _db.get<db::bac_stars>(d.id);
+                dancers_sorted[get_surname_key(d.name)] = std::tuple{d, b_s};
+            }
+
+            f.h4(n.title)
+                .dancers_header();
+
+            for (const auto & it : dancers_sorted)
+            {
+                const auto & [d, b_s] = it.second;
+                const auto stars = b_s.stars;
+                f.dancer(d.name, stars);
+            }
+
+            f.table_footer();
+        }
+    }
 }
 
 std::string hugo::get_surname_key(const std::string & name1, const std::string & name2)

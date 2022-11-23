@@ -16,6 +16,8 @@ public:
     fmt & h5(const std::string& text);
     fmt & couples_header();
     fmt & couple(const std::string& name1, double stars1, const std::string& name2, double stars2);
+    fmt & dancers_header();
+    fmt & dancer(const std::string& name, double stars);
     fmt & table_footer();
 
     static std::string url(const std::string& text, const std::string& url);
