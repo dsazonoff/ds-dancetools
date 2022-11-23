@@ -25,8 +25,8 @@ public:
 
 private:
     void proceed_competition(const competition & comp);
-    void proceed_group(const group& gr);
-    void proceed_result(const result& r, size_t place, double stars);
+    void proceed_group(const group & gr);
+    void proceed_result(const result & r, size_t place, double stars);
     void update_stars(int64_t start_date, int64_t end_date);
 
 private:

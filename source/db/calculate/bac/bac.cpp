@@ -138,9 +138,10 @@ void bac::update_stars(int64_t start_date, int64_t end_date)
                         c(&bac_result::competition_id) == _ctx.competition.id
                         and c(&bac_result::group_id) == _ctx.group.id
                         and c(&bac_result::dancer_id) == d.id));
-                const auto stars = std::accumulate(results.begin(), results.end(), 0.0, [](double v, const bac_result& b_r){
-                  return v + b_r.stars;
-                });
+                const auto stars = std::accumulate(results.begin(), results.end(), 0.0, [](double v, const bac_result & b_r)
+                    {
+                        return v + b_r.stars;
+                    });
                 b_s.stars = stars;
                 _db.update(b_s);
             }

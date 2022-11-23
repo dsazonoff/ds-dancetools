@@ -3,6 +3,6 @@
 namespace ds::utils
 {
 
-    json::value read_json(const fs::path& path);
+json::value read_json(const fs::path & path);
 
 }

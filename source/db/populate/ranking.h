@@ -14,11 +14,11 @@ public:
     cb::result callback();
 
 private:
-    void add_competition(competition& cp);
-    void add_group(group& g);
-    void add_dancer(std::optional<dancer>& d);
-    void add_couple(couple& cpl);
-    void add_result(result& r);
+    void add_competition(competition & cp);
+    void add_group(group & g);
+    void add_dancer(std::optional<dancer> & d);
+    void add_couple(couple & cpl);
+    void add_result(result & r);
 };
 
 

@@ -42,31 +42,31 @@ std::string & fmt::fix_date(std::string & date)
     return date;
 }
 
-fmt & fmt::h1(const std::string& text)
+fmt & fmt::h1(const std::string & text)
 {
     _os << "# " << text << "\n\n";
     return *this;
 }
 
-fmt & fmt::h2(const std::string& text)
+fmt & fmt::h2(const std::string & text)
 {
     _os << "## " << text << "\n\n";
     return *this;
 }
 
-fmt & fmt::h3(const std::string& text)
+fmt & fmt::h3(const std::string & text)
 {
     _os << "### " << text << "\n\n";
     return *this;
 }
 
-fmt & fmt::h4(const std::string& text)
+fmt & fmt::h4(const std::string & text)
 {
     _os << "#### " << text << "\n\n";
     return *this;
 }
 
-fmt & fmt::h5(const std::string& text)
+fmt & fmt::h5(const std::string & text)
 {
     _os << "##### " << text << "\n\n";
     return *this;

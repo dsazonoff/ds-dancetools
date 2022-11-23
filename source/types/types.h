@@ -84,6 +84,6 @@ namespace cb
 {
 using group_name = std::function<void(db::group_name)>;
 using result = std::function<void(db::competition, db::group, db::group_name, std::optional<db::dancer>, std::optional<db::dancer>, db::result)>;
-}
+} // namespace cb
 
 } // namespace ds::db

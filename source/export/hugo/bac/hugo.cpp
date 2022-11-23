@@ -69,8 +69,7 @@ void hugo::export_passed(const fs::path & path, int64_t start_date, int64_t end_
         throw std::logic_error{std::format("Could not write file: {}", path.generic_string())};
 
     fmt f{os};
-    // fmt f{std::cout};
-
+    
     f.yaml_header(_title, _root_url, "", _banner)
         .h2("Список участников, допущенных к \"Альянс Трофи\"")
         .h5(fmt::url("Положение о соревнованиях серии Гран-при \"Стань чемпионом!\"", _rules));
@@ -80,7 +79,18 @@ void hugo::export_passed(const fs::path & path, int64_t start_date, int64_t end_
         where(
             c(&db::competition::start_date) >= start_date
             and c(&db::competition::end_date) <= end_date));
-    const auto comp_ids = db::utils::ids(competitions);
+
+    static const auto dancers_ids_from_stars = [](const std::vector<db::bac_stars> & input)
+    {
+        std::vector<int64_t> ids;
+        ids.reserve(input.size());
+        std::transform(input.begin(), input.end(), std::back_inserter(ids),
+            [](const db::bac_stars & s)
+            {
+                return s.dancer_id;
+            });
+        return ids;
+    };
 
     // Couples
     {
@@ -99,12 +109,12 @@ void hugo::export_passed(const fs::path & path, int64_t start_date, int64_t end_
                     and c(&db::bac_stars::end_date) <= end_date));
             if (all_stars.empty())
                 continue;
-            const auto star_ids = db::utils::ids(all_stars);
 
+            const auto & dancers_ids = dancers_ids_from_stars(all_stars);
             const auto & couples = _db.get_all<db::couple>(
                 where(
-                    in(&db::couple::dancer_id1, star_ids)
-                    or in(&db::couple::dancer_id2, star_ids)));
+                    in(&db::couple::dancer_id1, dancers_ids)
+                    or in(&db::couple::dancer_id2, dancers_ids)));
 
             std::map<std::string, std::tuple<db::dancer, db::bac_stars, db::dancer, db::bac_stars>> couple_sorted;
             for (const auto & cpl : couples)
@@ -150,17 +160,20 @@ void hugo::export_passed(const fs::path & path, int64_t start_date, int64_t end_
                     and c(&db::bac_stars::end_date) <= end_date));
             if (all_stars.empty())
                 continue;
-            const auto star_ids = db::utils::ids(all_stars);
-
+            const auto & dancers_ids = dancers_ids_from_stars(all_stars);
             const auto & dancers = _db.get_all<db::dancer>(
                 where(
-                    in(&db::dancer::id, star_ids)));
+                    in(&db::dancer::id, dancers_ids)));
 
             std::map<std::string, std::tuple<db::dancer, db::bac_stars>> dancers_sorted;
             for (const auto & d : dancers)
             {
-                const auto & b_s = _db.get<db::bac_stars>(d.id);
-                dancers_sorted[get_surname_key(d.name)] = std::tuple{d, b_s};
+                const auto & b_s = _db.get_all<db::bac_stars>(
+                    where(
+                        c(&db::bac_stars::dancer_id) == d.id
+                        and c(&db::bac_stars::group_id) == g.id));
+                ds_assert(b_s.size() == 1);
+                dancers_sorted[get_surname_key(d.name)] = std::tuple{d, b_s[0]};
             }
 
             f.h4(n.title)
