@@ -1,13 +1,13 @@
 // This is an independent project of an individual developer. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++, C#, and Java: http://www.viva64.com
 
+#include "db/calculate/bac/bac.h"
 #include "db/db.h"
 #include "db/populate/manifest.h"
 #include "db/populate/ranking.h"
-#include "db/calculate/bac/bac.h"
+#include "export/hugo/bac/hugo.h"
 #include "parser/manifest/manifest_parser.h"
 #include "parser/text/ranking_parser.h"
-#include "export/hugo/bac/hugo.h"
 
 
 int main()
@@ -16,7 +16,8 @@ int main()
     {
         using namespace ds;
 
-        auto db = std::make_shared<db::db>("build/db.sqlite");
+        // auto db = std::make_shared<db::db>("build/db.sqlite");
+        auto db = std::make_shared<db::db>(":memory:");
         db::manifest manifest{db};
         db::ranking ranking{db};
 
@@ -36,7 +37,7 @@ int main()
 
         {
             db::bac b{db};
-            b.evaluate(20220101, 20221231);
+            b.evaluate(20220000, 20230000);
         }
 
         {

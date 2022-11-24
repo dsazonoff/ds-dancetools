@@ -14,12 +14,12 @@ using namespace sqlite_orm;
 
 bac::bac(const std::shared_ptr<db> & db)
     : base_logic{db}
+    , _db_ptr{db}
 {
 }
 
-void bac::evaluate(int64_t start_date, int64_t end_date)
+void bac::evaluate(int64_t start_date, int64_t end_date) // NOLINT(misc-no-recursion)
 {
-    _ctx = {};
     _ctx.competitions = _db.get_all<competition>(
         where(
             c(&competition::start_date) >= start_date
@@ -30,6 +30,15 @@ void bac::evaluate(int64_t start_date, int64_t end_date)
         proceed_competition(comp);
 
     update_stars(start_date, end_date);
+
+    // Evaluate each competition
+    for (const auto & comp : _ctx.competitions)
+    {
+        if (start_date == comp.start_date && end_date == comp.end_date)
+            continue; // Skip recursion
+        bac single_comp{_db_ptr};
+        single_comp.evaluate(comp.start_date, comp.end_date);
+    }
 }
 
 void bac::proceed_competition(const competition & comp)
@@ -137,7 +146,9 @@ void bac::update_stars(int64_t start_date, int64_t end_date)
                 const auto & b_stars = _db.get_all<bac_stars>(
                     where(
                         c(&bac_stars::group_id) == _ctx.group.id
-                        and c(&bac_stars::dancer_id) == d.id));
+                        and c(&bac_stars::dancer_id) == d.id
+                        and c(&bac_stars::start_date) == start_date
+                        and c(&bac_stars::end_date) == end_date));
                 ds_assert(b_stars.size() <= 1);
                 bac_stars b_s = {
                     0,

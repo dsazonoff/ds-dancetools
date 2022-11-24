@@ -19,6 +19,8 @@ public:
     fmt & dancers_header();
     fmt & dancer(const std::string & name, double stars);
     fmt & table_footer();
+    fmt & raw(const std::string& text);
+    fmt & br(size_t count = 1);
 
     static std::string url(const std::string & text, const std::string & url);
 

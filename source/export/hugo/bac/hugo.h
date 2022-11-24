@@ -2,8 +2,6 @@
 
 #include "db/base_logic.h"
 
-#include <string>
-
 
 namespace ds::exp::hugo
 {
@@ -21,7 +19,16 @@ public:
     void export_all(int64_t start_date, int64_t end_date);
 
 private:
-    void export_passed(const fs::path & path, int64_t start_date, int64_t end_date);
+    void export_custom(const fs::path & path,
+        int64_t start_date,
+        int64_t end_date,
+        const std::string & title,
+        const std::string & url,
+        const std::string & header,
+        const std::string & extra_header,
+        bool only_passed_dancers);
+    void export_passed(const fs::path & path, int64_t start_date, int64_t end_date, const std::string & extra_header);
+    void export_full_list(const fs::path & path, int64_t start_date, int64_t end_date, const std::string& url);
 
 private:
     fs::path _output;

@@ -112,5 +112,18 @@ fmt & fmt::dancer(const std::string & name, double stars)
     return *this;
 }
 
+fmt & fmt::raw(const std::string & text)
+{
+    _os << text;
+    return *this;
+}
+
+fmt & fmt::br(size_t count)
+{
+    for (size_t i = 0; i < count; ++i)
+        _os << '\n';
+    return *this;
+}
+
 
 } // namespace ds::exp::hugo

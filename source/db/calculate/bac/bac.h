@@ -31,6 +31,7 @@ private:
 
 private:
     context _ctx;
+    const std::shared_ptr<db> _db_ptr;
 };
 
 } // namespace ds::db
