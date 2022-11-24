@@ -224,9 +224,9 @@ std::tuple<std::optional<db::dancer>, std::optional<db::dancer>, db::result> ran
 
         return std::tuple{std::move(d1), std::move(d2), result};
     }
-    catch (const std::logic_error & ex)
+    catch (const std::exception & ex)
     {
-        throw std::logic_error{std::format("Could not parse line: {} - {}\nFile: {}", line, ex.what(), _ctx.file.generic_string())};
+        throw std::logic_error{std::format("Could not parse line: \"{}\" - {}\nFile: {}", line, ex.what(), _ctx.file.generic_string())};
     }
 }
 
