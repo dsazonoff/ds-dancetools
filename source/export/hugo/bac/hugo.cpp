@@ -122,10 +122,19 @@ void hugo::export_passed(const fs::path & path, int64_t start_date, int64_t end_
                     continue;
 
                 const auto & d1 = _db.get<db::dancer>(cpl.dancer_id1.value());
-                const auto & b_s1 = _db.get<db::bac_stars>(d1.id);
                 const auto & d2 = _db.get<db::dancer>(cpl.dancer_id2.value());
-                const auto & b_s2 = _db.get<db::bac_stars>(d2.id);
-                couple_sorted[get_surname_key(d1.name, d2.name)] = std::tuple{d1, b_s1, d2, b_s2};
+
+                const auto & b_s1 = _db.get_all<db::bac_stars>(
+                    where(c(&db::bac_stars::dancer_id) == d1.id
+                    and c(&db::bac_stars::group_id) == g.id));
+                ds_assert(b_s1.size() == 1);
+
+                const auto & b_s2 = _db.get_all<db::bac_stars>(
+                    where(c(&db::bac_stars::dancer_id) == d2.id
+                    and c(&db::bac_stars::group_id) == g.id));
+                ds_assert(b_s2.size() == 1);
+
+                couple_sorted[get_surname_key(d1.name, d2.name)] = std::tuple{d1, b_s1[0], d2, b_s2[0]};
             }
 
             f.h4(n.title)

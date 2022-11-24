@@ -4,6 +4,9 @@
 
 #include "bac.h"
 
+#include "db/utils.h"
+
+
 namespace ds::db
 {
 
@@ -55,9 +58,11 @@ void bac::proceed_group(const group & gr)
     size_t first_index = 0;
     for (size_t place = 1; place <= n_places; ++place)
     {
+        // clang-format off
         const auto amount = static_cast<size_t>(std::ceil(
             static_cast<double>(n_results - first_index) /
             static_cast<double>(n_places - place + 1)));
+        // clang-format on
         auto last_index = std::min(first_index + amount, n_results) - 1;
         for (auto index = last_index + 1; index < n_results; ++index)
         {
@@ -104,8 +109,11 @@ void bac::proceed_result(const result & r, size_t place, double stars)
 
 void bac::update_stars(int64_t start_date, int64_t end_date)
 {
+    const auto comp_ids = utils::ids(_ctx.competitions);
     for (const auto & comp : _ctx.competitions)
     {
+        ds_assert(comp.start_date >= start_date);
+        ds_assert(comp.end_date <= end_date);
         _ctx.competition = comp;
         for (const auto & group : _ctx.groups)
         {
@@ -137,9 +145,9 @@ void bac::update_stars(int64_t start_date, int64_t end_date)
 
                 const auto & results = _db.get_all<bac_result>(
                     where(
-                        c(&bac_result::competition_id) == _ctx.competition.id
-                        and c(&bac_result::group_id) == _ctx.group.id
-                        and c(&bac_result::dancer_id) == d.id));
+                        c(&bac_result::group_id) == _ctx.group.id
+                        and c(&bac_result::dancer_id) == d.id
+                        and in(&bac_result::competition_id, comp_ids)));
                 const auto stars = std::accumulate(results.begin(), results.end(), 0.0, [](double v, const bac_result & b_r)
                     {
                         return v + b_r.stars;
