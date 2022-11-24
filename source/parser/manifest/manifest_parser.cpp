@@ -32,7 +32,7 @@ void manifest_parser::set_group_callback(db::cb::group_name callback)
 void manifest_parser::parse()
 {
     const auto & manifest_path = _root / s_manifest;
-    std::cout << "Reading manifest: " << manifest_path.generic_string() << std::endl;
+    std::cout << std::format("Reading manifest: {}\n\n", manifest_path.generic_string());
 
     try
     {

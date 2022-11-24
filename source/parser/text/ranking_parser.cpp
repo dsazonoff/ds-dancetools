@@ -57,6 +57,7 @@ void ranking_parser::parse_results_dir(const fs::path & results_dir)
 
         parse_results_file(path);
     }
+    std::cout << "\n";
 }
 
 db::competition ranking_parser::parse_competition(const json::value & manifest) const
