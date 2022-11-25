@@ -59,8 +59,11 @@ void bac::proceed_group(const group & gr)
     if (results.empty())
         return;
 
-    if (results.begin()->place_start != 1
-        || results.rbegin()->place_end != static_cast<int64_t>(results.size()))
+    const auto first_place = results.begin()->place_start;
+    const auto last_place = results.rbegin()->place_end;
+
+    if (first_place != 1
+        || last_place != static_cast<int64_t>(results.size()))
     {
         const auto & comp_name = _ctx.competition.title;
         const auto & gr_name = _db.get<group_name>(gr.id).title;

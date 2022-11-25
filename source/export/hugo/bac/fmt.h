@@ -14,10 +14,12 @@ public:
     fmt & h3(const std::string & text);
     fmt & h4(const std::string & text);
     fmt & h5(const std::string & text);
-    fmt & couples_header();
+    fmt & couples_header(bool print_stars = true);
     fmt & couple(const std::string & name1, double stars1, const std::string & name2, double stars2);
-    fmt & dancers_header();
+    fmt & couple(const std::string & name1, const std::string & name2);
+    fmt & dancers_header(bool print_stars = true);
     fmt & dancer(const std::string & name, double stars);
+    fmt & dancer(const std::string & name);
     fmt & table_footer();
     fmt & raw(const std::string& text);
     fmt & br(size_t count = 1);

@@ -19,16 +19,19 @@ public:
     void export_all(int64_t start_date, int64_t end_date);
 
 private:
-    void export_custom(const fs::path & path,
+    void export_custom(
+        const fs::path & path,
         int64_t start_date,
         int64_t end_date,
         const std::string & title,
         const std::string & url,
         const std::string & header,
         const std::string & extra_header,
-        bool only_passed_dancers);
+        bool only_passed_dancers,
+        bool print_points);
     void export_passed(const fs::path & path, int64_t start_date, int64_t end_date, const std::string & extra_header);
-    void export_full_list(const fs::path & path, int64_t start_date, int64_t end_date, const std::string& url);
+    void export_full_list(const fs::path & path, int64_t start_date, int64_t end_date, const std::string & url);
+    void export_competition(const fs::path & path, const std::string & url, const db::competition& comp);
 
 private:
     fs::path _output;
@@ -39,6 +42,7 @@ private:
     std::string _root_url;
     std::string _banner;
     std::string _rules;
+    bool _export_all = false;
     std::set<std::string> _solo_groups;
     std::set<std::string> _couple_groups;
 

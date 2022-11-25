@@ -67,7 +67,8 @@ void ranking::add_group(group & g)
         where(
             c(&group::group_name_id) == g.group_name_id
             and c(&group::min_year) == g.min_year
-            and c(&group::max_year) == g.max_year));
+            and c(&group::max_year) == g.max_year
+            and c(&group::is_solo) == g.is_solo));
     get_or_insert(groups, g);
 }
 

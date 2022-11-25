@@ -7,6 +7,8 @@
 #include "fmt.h"
 #include "utils/json.h"
 
+#include <filesystem>
+
 
 namespace
 {
@@ -17,6 +19,8 @@ constexpr const auto s_competition_list = "Результаты прошедши
 constexpr const auto s_couples = "Пары";
 constexpr const auto s_solo = "Соло";
 constexpr const auto s_full_list_suffix = "-full-list";
+constexpr const auto s_results_dir = "results";
+
 } // namespace
 
 
@@ -54,6 +58,7 @@ void hugo::set_manifest(const fs::path & path)
         _root_url = cfg.at("url").as_string().c_str();
         _banner = cfg.at("banner").as_string().c_str();
         _rules = cfg.at("rules").as_string().c_str();
+        _export_all = cfg.at("export_all").as_bool();
         for (const auto & g : cfg.at("solo_groups").as_array())
             _solo_groups.emplace(g.as_string().c_str());
         for (const auto & g : cfg.at("couple_groups").as_array())
@@ -89,15 +94,14 @@ void hugo::export_all(int64_t start_date, int64_t end_date)
     fs::create_directories(comp_dir);
 
     std::stringstream extra;
+    if (_export_all)
     {
         fmt f{extra};
         const auto & url_all = std::format("{}/{}{}", _root_url, _suffix, s_full_list_suffix);
-        const auto & all_path =_output / std::format("{}{}.md", _suffix, s_full_list_suffix);
+        const auto & all_path = _output / std::format("{}{}.md", _suffix, s_full_list_suffix);
         export_full_list(all_path, start_date, end_date, url_all);
 
         f.h4(fmt::url(s_full_list, url_all));
-    }
-    {
     }
 
     const auto & passed_path = _output / (_suffix + ".md");
@@ -114,11 +118,30 @@ void hugo::export_passed(const fs::path & path, int64_t start_date, int64_t end_
         _root_url,
         s_allowed_list,
         extra_header,
-        true);
+        true,
+        false);
 }
 
-void hugo::export_full_list(const fs::path & path, int64_t start_date, int64_t end_date, const std::string& url)
+void hugo::export_full_list(const fs::path & path, int64_t start_date, int64_t end_date, const std::string & url)
 {
+    std::stringstream extra;
+    {
+        const auto & competitions = _db.get_all<db::competition>(
+            where(
+                c(&db::competition::start_date) >= start_date
+                and c(&db::competition::end_date) <= end_date));
+        const auto & results_dir = _output / s_results_dir;
+        fs::create_directories(results_dir);
+        for( const auto & comp : competitions )
+        {
+            const auto name = std::format("{}-{}", comp.start_date, comp.end_date);
+            const auto filepath = results_dir / std::format("{}.md", name);
+            const auto comp_url = std::format("{}/{}/{}", _root_url, s_results_dir, name);
+            export_competition(filepath, comp_url, comp);
+        }
+    }
+
+
     export_custom(
         path,
         start_date,
@@ -127,10 +150,26 @@ void hugo::export_full_list(const fs::path & path, int64_t start_date, int64_t e
         url,
         s_full_list,
         "",
-        false);
+        false,
+        true);
 }
 
-void hugo::export_custom(const fs::path & path, int64_t start_date, int64_t end_date, const std::string & title, const std::string & url, const std::string & header, const std::string & extra_header, bool only_passed_dancers)
+void hugo::export_competition(const fs::path & path, const std::string & url, const db::competition & comp)
+{
+    export_custom(
+        path,
+        comp.start_date,
+        comp.end_date,
+        comp.title,
+        url,
+        s_full_list,
+        "",
+        false,
+        true);
+}
+
+
+void hugo::export_custom(const fs::path & path, int64_t start_date, int64_t end_date, const std::string & title, const std::string & url, const std::string & header, const std::string & extra_header, bool only_passed_dancers, bool print_points)
 {
     std::cout << std::format("Exporting list of couples: {}\n", path.generic_string());
     std::ofstream os{path};
@@ -222,13 +261,15 @@ void hugo::export_custom(const fs::path & path, int64_t start_date, int64_t end_
             }
 
             f.h4(n.title)
-                .couples_header();
+                .couples_header(print_points);
 
             for (const auto & it : couple_sorted)
             {
                 const auto & [d1, b_s1, d2, b_s2] = it.second;
-                const auto stars = std::max(b_s1.stars, b_s2.stars);
-                f.couple(d1.name, b_s1.stars, d2.name, b_s2.stars);
+                if (print_points)
+                    f.couple(d1.name, b_s1.stars, d2.name, b_s2.stars);
+                else
+                    f.couple(d1.name, d2.name);
             }
 
             f.table_footer();
@@ -278,13 +319,18 @@ void hugo::export_custom(const fs::path & path, int64_t start_date, int64_t end_
             }
 
             f.h4(n.title)
-                .dancers_header();
+                .dancers_header(print_points);
 
             for (const auto & it : dancers_sorted)
             {
                 const auto & [d, b_s] = it.second;
-                const auto stars = b_s.stars;
-                f.dancer(d.name, stars);
+                if (print_points)
+                {
+                    const auto stars = b_s.stars;
+                    f.dancer(d.name, stars);
+                }
+                else
+                    f.dancer(d.name);
             }
 
             f.table_footer();

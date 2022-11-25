@@ -1,0 +1,35 @@
+{
+  "groups": [
+    {
+      "id": "juv1-solo",
+      "min_year": 2013,
+      "max_year": 0,
+      "solo": true
+    },
+    {
+      "id": "juv2-solo",
+      "min_year": 2011,
+      "max_year": 2012,
+      "solo": true
+    },
+    {
+      "id": "juv1-couples",
+      "min_year": 2013,
+      "max_year": 0,
+      "solo": false
+    },
+    {
+      "id": "juv2-couples",
+      "min_year": 2011,
+      "max_year": 2012,
+      "solo": false
+    }
+  ],
+  "competition": {
+    "title": "Royal CUP 2022",
+    "start_date": "2022-11-20",
+    "end_date": "2022-11-20",
+    "url": "https://ereg.by/results/2022-11-20_141-0/index.htm",
+    "points_scale": 2.0
+  }
+}

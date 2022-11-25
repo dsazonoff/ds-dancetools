@@ -77,9 +77,12 @@ std::string fmt::url(const std::string & text, const std::string & url)
     return std::format("[{}]({})", text, url);
 }
 
-fmt & fmt::couples_header()
+fmt & fmt::couples_header(bool print_stars)
 {
-    _os << "| Партнёр | &nbsp;&nbsp;&nbsp; | Звёзды | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | Партнёрша | &nbsp;&nbsp;&nbsp; | Звёзды |\n";
+    if (print_stars)
+        _os << "| Партнёр | &nbsp;&nbsp;&nbsp; | Звёзды | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | Партнёрша | &nbsp;&nbsp;&nbsp; | Звёзды |\n";
+    else
+        _os << "| Партнёр | &nbsp;&nbsp;&nbsp; | &nbsp; | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | Партнёрша | &nbsp;&nbsp;&nbsp; | &nbsp; |\n";
     _os << "|:--|-|:--:|-|:--|-|:--:|\n";
 
     return *this;
@@ -94,13 +97,22 @@ fmt & fmt::table_footer()
 fmt & fmt::couple(const std::string & name1, double stars1, const std::string & name2, double stars2)
 {
     _os << std::format("|{}|&nbsp;|{}| |{}|&nbsp;|{}|\n", name1, stars1, name2, stars2);
+    return *this;
+}
+
+fmt & fmt::couple(const std::string & name1, const std::string & name2)
+{
+    _os << std::format("|{}|&nbsp;| | |{}|&nbsp;| |\n", name1, name2);
 
     return *this;
 }
 
-fmt & fmt::dancers_header()
+fmt & fmt::dancers_header(bool print_stars)
 {
-    _os << "| Фамилия Имя | &nbsp;&nbsp;&nbsp; | Звёзды |\n";
+    if (print_stars)
+        _os << "| Фамилия Имя | &nbsp;&nbsp;&nbsp; | &nbsp; |\n";
+    else
+        _os << "| Фамилия Имя | &nbsp;&nbsp;&nbsp; | &nbsp; |\n";
     _os << "|:--|-|:--:|\n";
 
     return *this;
@@ -109,6 +121,12 @@ fmt & fmt::dancers_header()
 fmt & fmt::dancer(const std::string & name, double stars)
 {
     _os << std::format("|{}|&nbsp;|{}|\n", name, stars);
+    return *this;
+}
+
+fmt & fmt::dancer(const std::string & name)
+{
+    _os << std::format("|{}|&nbsp;| |\n", name);
     return *this;
 }
 

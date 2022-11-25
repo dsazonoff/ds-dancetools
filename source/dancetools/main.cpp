@@ -10,27 +10,34 @@
 #include "parser/text/ranking_parser.h"
 
 
+namespace
+{
+//constexpr const auto s_results_path = "data/input/text/become-a-champion";
+constexpr const auto s_results_path = "data/input/text/debug";
+} // namespace
+
+
 int main()
 {
     try
     {
         using namespace ds;
 
-        // auto db = std::make_shared<db::db>("build/db.sqlite");
-        auto db = std::make_shared<db::db>(":memory:");
+        auto db = std::make_shared<db::db>("build/db.sqlite");
+        // auto db = std::make_shared<db::db>(":memory:");
         db::manifest manifest{db};
         db::ranking ranking{db};
 
         {
             parser::manifest_parser p;
-            p.set_root_dir("data/input/text/become-a-champion");
+            p.set_root_dir(s_results_path);
             p.set_group_callback(manifest.callback());
             p.parse();
         }
 
         {
             parser::ranking_parser p;
-            p.set_root_dir("data/input/text/become-a-champion");
+            p.set_root_dir(s_results_path);
             p.set_callback(ranking.callback());
             p.parse();
         }
@@ -44,7 +51,8 @@ int main()
             exp::hugo::hugo h{db};
             h.set_output_dir("../sportdance-by/content/pages/db");
             h.set_suffix("become-a-champion");
-            h.set_manifest("data/input/text/become-a-champion/hugo-2022.json");
+            const auto manifest_path = fs::path{s_results_path} / "hugo-2022.json";
+            h.set_manifest(manifest_path);
             h.export_all(20220000, 20230000);
         }
     }
