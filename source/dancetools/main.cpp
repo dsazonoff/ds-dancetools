@@ -12,8 +12,8 @@
 
 namespace
 {
-//constexpr const auto s_results_path = "data/input/text/become-a-champion";
-constexpr const auto s_results_path = "data/input/text/debug";
+constexpr const auto s_results_path = "data/input/text/become-a-champion";
+// constexpr const auto s_results_path = "data/input/text/debug";
 } // namespace
 
 
@@ -23,8 +23,8 @@ int main()
     {
         using namespace ds;
 
-        auto db = std::make_shared<db::db>("build/db.sqlite");
-        // auto db = std::make_shared<db::db>(":memory:");
+        // auto db = std::make_shared<db::db>("build/db.sqlite");
+        auto db = std::make_shared<db::db>(":memory:");
         db::manifest manifest{db};
         db::ranking ranking{db};
 

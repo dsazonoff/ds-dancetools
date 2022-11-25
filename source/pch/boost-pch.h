@@ -14,6 +14,7 @@
 #include <boost/smart_ptr/make_shared.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/uuid/name_generator_sha1.hpp>
+#include <boost/uuid/detail/sha1.hpp>
 
 namespace po = boost::program_options;
 namespace pt = boost::property_tree;

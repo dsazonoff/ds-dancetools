@@ -21,8 +21,9 @@ public:
     fmt & dancer(const std::string & name, double stars);
     fmt & dancer(const std::string & name);
     fmt & table_footer();
-    fmt & raw(const std::string& text);
+    fmt & raw(const std::string & text);
     fmt & br(size_t count = 1);
+    fmt & list(const std::string & text);
 
     static std::string url(const std::string & text, const std::string & url);
 

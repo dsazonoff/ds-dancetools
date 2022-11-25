@@ -44,31 +44,31 @@ std::string & fmt::fix_date(std::string & date)
 
 fmt & fmt::h1(const std::string & text)
 {
-    _os << "# " << text << "\n\n";
+    _os << "# " << text << "\n";
     return *this;
 }
 
 fmt & fmt::h2(const std::string & text)
 {
-    _os << "## " << text << "\n\n";
+    _os << "## " << text << "\n";
     return *this;
 }
 
 fmt & fmt::h3(const std::string & text)
 {
-    _os << "### " << text << "\n\n";
+    _os << "### " << text << "\n";
     return *this;
 }
 
 fmt & fmt::h4(const std::string & text)
 {
-    _os << "#### " << text << "\n\n";
+    _os << "#### " << text << "\n";
     return *this;
 }
 
 fmt & fmt::h5(const std::string & text)
 {
-    _os << "##### " << text << "\n\n";
+    _os << "##### " << text << "\n";
     return *this;
 }
 
@@ -140,6 +140,12 @@ fmt & fmt::br(size_t count)
 {
     for (size_t i = 0; i < count; ++i)
         _os << '\n';
+    return *this;
+}
+
+fmt & fmt::list(const std::string & text)
+{
+    _os << std::format("- {}\n", text);
     return *this;
 }
 
