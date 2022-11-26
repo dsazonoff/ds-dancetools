@@ -2,6 +2,7 @@
 // PVS-Studio Static Code Analyzer for C, C++, C#, and Java: http://www.viva64.com
 
 #include "db/calculate/bac/bac.h"
+#include "db/calculate/bac/override_bac.h"
 #include "db/db.h"
 #include "db/populate/manifest.h"
 #include "db/populate/ranking.h"
@@ -43,8 +44,9 @@ int main()
         }
 
         {
+            const auto override_path = fs::path{s_results_path} / "override-2022.json";
             db::bac b{db};
-            b.evaluate(20220000, 20230000);
+            b.evaluate(20220000, 20230000, override_path);
         }
 
         {

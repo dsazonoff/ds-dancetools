@@ -5,7 +5,7 @@
 #include "bac.h"
 
 #include "db/utils.h"
-
+#include "override_bac.h"
 
 namespace ds::db
 {
@@ -18,7 +18,7 @@ bac::bac(const std::shared_ptr<db> & db)
 {
 }
 
-void bac::evaluate(int64_t start_date, int64_t end_date) // NOLINT(misc-no-recursion)
+void bac::evaluate(int64_t start_date, int64_t end_date, const fs::path& override_path) // NOLINT(misc-no-recursion)
 {
     _ctx.competitions = _db.get_all<competition>(
         where(
@@ -29,6 +29,10 @@ void bac::evaluate(int64_t start_date, int64_t end_date) // NOLINT(misc-no-recur
     for (const auto & comp : _ctx.competitions)
         proceed_competition(comp);
 
+    override_bac overrider{_db_ptr};
+    overrider.set_config(override_path);
+    overrider.apply(start_date, end_date);
+
     update_stars(start_date, end_date);
 
     // Evaluate each competition
@@ -37,7 +41,7 @@ void bac::evaluate(int64_t start_date, int64_t end_date) // NOLINT(misc-no-recur
         if (start_date == comp.start_date && end_date == comp.end_date)
             continue; // Skip recursion
         bac single_comp{_db_ptr};
-        single_comp.evaluate(comp.start_date, comp.end_date);
+        single_comp.evaluate(comp.start_date, comp.end_date, override_path);
     }
 }
 

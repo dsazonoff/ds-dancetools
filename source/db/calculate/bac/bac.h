@@ -21,7 +21,7 @@ private:
 public:
     explicit bac(const std::shared_ptr<db> & db);
 
-    void evaluate(int64_t start_date, int64_t end_date);
+    void evaluate(int64_t start_date, int64_t end_date, const fs::path& override_path);
 
 private:
     void proceed_competition(const competition & comp);

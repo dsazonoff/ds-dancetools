@@ -420,7 +420,6 @@ void hugo::export_all_dancers(const fs::path & path, const std::string & url, in
 
 void hugo::export_dancer(const fs::path & path, const std::string & url, const db::dancer & dancer, const std::vector<db::competition> & competitions, int64_t start_date, int64_t end_date)
 {
-    std::cout << std::format("Exporting dancer details: {}\n", path.generic_string());
     std::ofstream os{path};
     if (!os.is_open())
         throw std::logic_error{std::format("Could not write file: {}", path.generic_string())};
@@ -433,7 +432,7 @@ void hugo::export_dancer(const fs::path & path, const std::string & url, const d
     for (const auto & g : groups)
     {
         const auto & gr_name = _db.get<db::group_name>(g.group_name_id);
-        f.h5(gr_name.title);
+        f.h3(gr_name.title);
 
         f.raw("| Звёзды | &nbsp;&nbsp;&nbsp; | Турнир |\n|--:|-|:--|\n");
         for (const auto & comp : competitions)

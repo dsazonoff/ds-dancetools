@@ -130,19 +130,19 @@ void ranking_parser::parse_results_file(const fs::path & path)
     const auto group_it = _ctx.groups.find(group_id);
     if (group_it == _ctx.groups.end())
         throw std::logic_error{std::format("Group is not in manifest: {}", group_id)};
-    const auto& group_name = group_it->first;
+    const auto & group_name = group_it->first;
     _ctx.group = group_it->second;
 
     std::ifstream is{path.generic_string()};
     if (!is.is_open())
         throw std::logic_error{std::format("Could not read file: {}", path.generic_string())};
 
+    ds_assert(_result_callback);
     _ctx.file = path;
     for (std::string line; !!std::getline(is, line);)
     {
-        auto [d1, d2, result] = parse_line(line);
-        if (_result_callback)
-            _result_callback(_ctx.competition, _ctx.group, db::group_name{0, group_name, std::string{}}, std::move(d1), std::move(d2), result);
+        auto [dancer1, dancer2, result] = parse_line(line);
+        _result_callback(_ctx.competition, _ctx.group, db::group_name{0, group_name, std::string{}}, std::move(dancer1), std::move(dancer2), result);
     }
 }
 
@@ -191,7 +191,7 @@ std::tuple<std::optional<db::dancer>, std::optional<db::dancer>, db::result> ran
         static const auto build_name = [](std::initializer_list<std::string> list)
         {
             std::vector<std::string> v;
-            for ( const auto& w : list)
+            for (const auto & w : list)
                 if (!w.empty())
                     v.push_back(w);
             return boost::join(v, " ");
