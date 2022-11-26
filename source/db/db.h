@@ -18,8 +18,8 @@ inline auto make_db(const std::string & path)
             ),
 
         make_table("groups",
-            make_column("id",               &group::id, autoincrement(), primary_key()),
-            make_column("group_name_id",    &group::group_name_id),
+            make_column("id",               &group::id,                 autoincrement(), primary_key()),
+            make_column("group_name_id",    &group::group_name_id,      unique()),
             make_column("min_year",         &group::min_year),
             make_column("max_year",         &group::max_year),
             make_column("is_solo",          &group::is_solo),
