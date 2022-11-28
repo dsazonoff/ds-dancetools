@@ -5,8 +5,8 @@
     "url": "/db/become-a-champion",
     "banner": "/images/become-a-champion.jpg",
     "rules": "/docs/grand-prix-become-a-champion.pdf",
-    "export_all": true,
-    "export_details": true,
+    "export_all": false,
+    "export_details": false,
     "solo_groups": [
       "juv1-solo",
       "juv2-solo"
