@@ -1,0 +1,51 @@
+{
+  "dancers": [
+    {
+      "name": "Маргарита Кадацкая",
+      "action": "move",
+      "from_group": "juv2-solo",
+      "to_group": "juv1-solo"
+    },
+    {
+      "name": "Валентина Бондарь",
+      "action": "move",
+      "from_group": "juv2-solo",
+      "to_group": "juv1-solo"
+    },
+    {
+      "name": "Ксения Рябуха",
+      "action": "move",
+      "from_group": "juv1-solo",
+      "to_group": "juv2-solo"
+    },
+    {
+      "name": "Ульяна Чайковская",
+      "action": "remove",
+      "from_group": "juv2-solo"
+    },
+    {
+      "name": "Андрей Усищев",
+      "action": "add_points",
+      "group": "juv2-couples",
+      "start_date": 20220409,
+      "end_date": 20220410,
+      "points": 1.0
+    },
+    {
+      "name": "Анна Дедюля",
+      "action": "add_points",
+      "group": "juv2-couples",
+      "start_date": 20220409,
+      "end_date": 20220410,
+      "points": 1.0
+    }
+  ],
+  "couples": [
+    {
+      "male": "Кирилл Ботеновский",
+      "female": "Анисья Барташевич",
+      "action": "remove",
+      "from_group": "juv1-couples"
+    }
+  ]
+}
