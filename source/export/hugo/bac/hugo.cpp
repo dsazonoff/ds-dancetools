@@ -385,6 +385,18 @@ void hugo::export_all_dancers(const fs::path & path, const std::string & url, in
             limit(1));
         if (n_results == 0)
             continue;
+        if (!_export_all)
+        {
+            const auto & stars = _db.get_all<db::bac_stars>(
+                where(
+                    c(&db::bac_stars::dancer_id) == d.id
+                    and c(&db::bac_stars::start_date) >= start_date
+                    and c(&db::bac_stars::end_date) <= end_date
+                    and c(&db::bac_stars::stars) >= _minimum_points));
+            if (stars.empty())
+                continue;
+        }
+
         sorted[get_surname_key(d.name)] = d;
     }
 
@@ -408,7 +420,6 @@ void hugo::export_all_dancers(const fs::path & path, const std::string & url, in
     for (const auto & it : sorted)
     {
         const auto & d = it.second;
-
         const auto hash = hash_dancer(d);
         const auto & dancer_url = std::format("{}/{}/{}", _root_url, s_dancers_dir, hash);
         const auto & dancer_path = dancers_dir / std::format("{}.md", hash);
