@@ -5,7 +5,7 @@ load_targets(types utils)
 begin_target(LIBRARY)
 
 populate_sources()
-configure_packages_and_pch(DEPENDENCIES stl sqlite_orm)
+configure_packages_and_pch(DEPENDENCIES stl sqlite_orm fmt)
 
 target_link_libraries(${target_name} PUBLIC types utils)
 

@@ -5,7 +5,7 @@
 #include "hugo.h"
 
 #include "db/utils.h"
-#include "fmt.h"
+#include "formatter.h"
 #include "utils/json.h"
 
 
@@ -50,7 +50,7 @@ void hugo::set_suffix(std::string suffix)
 
 void hugo::set_manifest(const fs::path & path)
 {
-    std::cout << std::format("Reading hugo config: {}\n", path.generic_string());
+    std::cout << fmt::format("Reading hugo config: {}\n", path.generic_string());
 
     try
     {
@@ -71,7 +71,7 @@ void hugo::set_manifest(const fs::path & path)
     }
     catch (const std::exception & ex)
     {
-        throw std::logic_error{std::format("Could not parse hugo config\nError: {}", ex.what())};
+        throw std::logic_error{fmt::format("Could not parse hugo config\nError: {}", ex.what())};
     }
 }
 
@@ -85,7 +85,8 @@ std::string hugo::get_surname_key(const std::string & name1, const std::string &
         std::vector<std::string> tokens;
         tokens.reserve(2);
         boost::split(tokens, n, boost::is_any_of(" "));
-        for (const auto & token : std::ranges::reverse_view(tokens))
+        std::reverse(tokens.begin(), tokens.end());
+        for (const auto & token : tokens)
             ss << token;
     }
     return ss.str();
@@ -101,20 +102,20 @@ void hugo::export_all(int64_t start_date, int64_t end_date)
     std::stringstream extra;
     if (_export_all)
     {
-        const auto & all_url = std::format("{}/{}{}", _root_url, _suffix, s_full_list_suffix);
-        const auto & all_path = _output / std::format("{}{}.md", _suffix, s_full_list_suffix);
+        const auto & all_url = fmt::format("{}/{}{}", _root_url, _suffix, s_full_list_suffix);
+        const auto & all_path = _output / fmt::format("{}{}.md", _suffix, s_full_list_suffix);
         export_full_list(all_path, start_date, end_date, all_url);
 
-        fmt f{extra};
-        f.h4(fmt::url(s_full_list, all_url));
+        formatter f{extra};
+        f.h4(formatter::url(s_full_list, all_url));
     }
     if (_export_details)
     {
-        const auto & dancers_url = std::format("{}/{}{}", _root_url, _suffix, s_dancer_list_suffix);
-        const auto & dancers_path = _output / std::format("{}{}.md", _suffix, s_dancer_list_suffix);
+        const auto & dancers_url = fmt::format("{}/{}{}", _root_url, _suffix, s_dancer_list_suffix);
+        const auto & dancers_path = _output / fmt::format("{}{}.md", _suffix, s_dancer_list_suffix);
         export_all_dancers(dancers_path, dancers_url, start_date, end_date);
-        fmt f{extra};
-        f.h4(fmt::url(s_details, dancers_url));
+        formatter f{extra};
+        f.h4(formatter::url(s_details, dancers_url));
     }
 
     const auto & passed_path = _output / (_suffix + ".md");
@@ -145,16 +146,16 @@ void hugo::export_full_list(const fs::path & path, int64_t start_date, int64_t e
                 and c(&db::competition::end_date) <= end_date));
         const auto & results_dir = _output / s_results_dir;
         fs::create_directories(results_dir);
-        fmt f{extra};
+        formatter f{extra};
         f.h3(s_competition_list);
         for (const auto & comp : competitions)
         {
-            const auto name = std::format("{}-{}", comp.start_date, comp.end_date);
-            const auto filepath = results_dir / std::format("{}.md", name);
-            const auto comp_url = std::format("{}/{}/{}", _root_url, s_results_dir, name);
+            const auto name = fmt::format("{}-{}", comp.start_date, comp.end_date);
+            const auto filepath = results_dir / fmt::format("{}.md", name);
+            const auto comp_url = fmt::format("{}/{}/{}", _root_url, s_results_dir, name);
             export_competition(filepath, comp_url, comp);
 
-            f.list(fmt::url(comp.title, comp_url));
+            f.list(formatter::url(comp.title, comp_url));
         }
         f.br();
     }
@@ -179,24 +180,24 @@ void hugo::export_competition(const fs::path & path, const std::string & url, co
         comp.end_date,
         comp.title,
         url,
-        std::format("{}{}", s_competition_results, comp.title),
-        std::format("{}", fmt::url(s_results, comp.url)),
+        fmt::format("{}{}", s_competition_results, comp.title),
+        fmt::format("{}", formatter::url(s_results, comp.url)),
         false,
         true);
 }
 
 void hugo::export_custom(const fs::path & path, int64_t start_date, int64_t end_date, const std::string & title, const std::string & url, const std::string & header, const std::string & extra_header, bool only_passed_dancers, bool print_points)
 {
-    std::cout << std::format("Exporting list of couples: {}\n", path.generic_string());
+    std::cout << fmt::format("Exporting list of couples: {}\n", path.generic_string());
     std::ofstream os{path};
     if (!os.is_open())
-        throw std::logic_error{std::format("Could not write file: {}", path.generic_string())};
+        throw std::logic_error{fmt::format("Could not write file: {}", path.generic_string())};
 
-    fmt f{os};
+    formatter f{os};
 
     f.yaml_header(title, url, "", _banner)
         .h2(header)
-        .h4(fmt::url(s_rules_list, _rules))
+        .h4(formatter::url(s_rules_list, _rules))
         .br()
         .raw(extra_header)
         .br();
@@ -226,7 +227,7 @@ void hugo::export_custom(const fs::path & path, int64_t start_date, int64_t end_
         for (const auto & g : groups)
         {
             const auto & n = _db.get<db::group_name>(g.group_name_id);
-            if (!_couple_groups.contains(n.name))
+            if (_couple_groups.find(n.name) == _couple_groups.end())
                 continue;
 
             const auto & all_stars = _db.get_all<db::bac_stars>(
@@ -302,7 +303,7 @@ void hugo::export_custom(const fs::path & path, int64_t start_date, int64_t end_
         for (const auto & g : groups)
         {
             const auto & n = _db.get<db::group_name>(g.group_name_id);
-            if (!_solo_groups.contains(n.name))
+            if (_solo_groups.find(n.name) == _solo_groups.end())
                 continue;
 
             const auto & all_stars = _db.get_all<db::bac_stars>(
@@ -359,12 +360,12 @@ void hugo::export_custom(const fs::path & path, int64_t start_date, int64_t end_
 
 void hugo::export_all_dancers(const fs::path & path, const std::string & url, int64_t start_date, int64_t end_date)
 {
-    std::cout << std::format("Exporting list of dancers: {}\n", path.generic_string());
+    std::cout << fmt::format("Exporting list of dancers: {}\n", path.generic_string());
     std::ofstream os{path};
     if (!os.is_open())
-        throw std::logic_error{std::format("Could not write file: {}", path.generic_string())};
+        throw std::logic_error{fmt::format("Could not write file: {}", path.generic_string())};
 
-    fmt f{os};
+    formatter f{os};
     f.yaml_header(s_details, url, "", "")
         .h2(s_details);
 
@@ -402,7 +403,7 @@ void hugo::export_all_dancers(const fs::path & path, const std::string & url, in
 
     static const auto hash_dancer = [](const db::dancer & dancer)
     {
-        const auto data = std::format("{}{}", dancer.name, dancer.birthday);
+        const auto data = fmt::format("{}{}", dancer.name, dancer.birthday);
         boost::uuids::detail::sha1 sha1;
         sha1.process_bytes(&data[0], data.size());
         boost::uuids::detail::sha1::digest_type d;
@@ -413,7 +414,7 @@ void hugo::export_all_dancers(const fs::path & path, const std::string & url, in
         return result;
     };
 
-    f.h5(std::format("Всего участников: {}", sorted.size()));
+    f.h5(fmt::format("Всего участников: {}", sorted.size()));
 
     const auto dancers_dir = _output / s_dancers_dir;
     fs::create_directories(dancers_dir);
@@ -421,10 +422,10 @@ void hugo::export_all_dancers(const fs::path & path, const std::string & url, in
     {
         const auto & d = it.second;
         const auto hash = hash_dancer(d);
-        const auto & dancer_url = std::format("{}/{}/{}", _root_url, s_dancers_dir, hash);
-        const auto & dancer_path = dancers_dir / std::format("{}.md", hash);
+        const auto & dancer_url = fmt::format("{}/{}/{}", _root_url, s_dancers_dir, hash);
+        const auto & dancer_path = dancers_dir / fmt::format("{}.md", hash);
 
-        f.list(fmt::url(d.name, dancer_url));
+        f.list(formatter::url(d.name, dancer_url));
         export_dancer(dancer_path, dancer_url, d, competitions, start_date, end_date);
     }
 }
@@ -433,9 +434,9 @@ void hugo::export_dancer(const fs::path & path, const std::string & url, const d
 {
     std::ofstream os{path};
     if (!os.is_open())
-        throw std::logic_error{std::format("Could not write file: {}", path.generic_string())};
+        throw std::logic_error{fmt::format("Could not write file: {}", path.generic_string())};
 
-    fmt f{os};
+    formatter f{os};
     f.yaml_header(dancer.name, url, "", "")
         .h2(dancer.name);
 
@@ -462,7 +463,7 @@ void hugo::export_dancer(const fs::path & path, const std::string & url, const d
                     and c(&db::bac_stars::start_date) >= comp.start_date
                     and c(&db::bac_stars::end_date) <= comp.end_date));
             ds_assert(stars.size() == 1);
-            f.raw(std::format("|{}| &nbsp;&nbsp;&nbsp; |{}|", stars[0].stars, comp.title)).br();
+            f.raw(fmt::format("|{}| &nbsp;&nbsp;&nbsp; |{}|", stars[0].stars, comp.title)).br();
         }
 
         const auto & total = _db.get_all<db::bac_stars>(
@@ -477,7 +478,7 @@ void hugo::export_dancer(const fs::path & path, const std::string & url, const d
 
         f.raw("| Итого: | &nbsp;&nbsp;&nbsp; |  |")
             .br()
-            .raw(std::format("|{}| &nbsp;&nbsp;&nbsp; | |", total[0].stars))
+            .raw(fmt::format("|{}| &nbsp;&nbsp;&nbsp; | |", total[0].stars))
             .br(2);
     }
 }

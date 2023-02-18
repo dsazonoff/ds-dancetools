@@ -12,7 +12,7 @@ json::value read_json(const fs::path & path)
 {
     std::ifstream is{path};
     if (!is.is_open())
-        throw std::logic_error{std::format("Could not read file: {}", path.generic_string())};
+        throw std::logic_error{fmt::format("Could not read file: {}", path.generic_string())};
     const std::string data{std::istreambuf_iterator<char>{is}, std::istreambuf_iterator<char>{}};
     return json::parse(data);
 }

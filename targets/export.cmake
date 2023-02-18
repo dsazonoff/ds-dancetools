@@ -5,7 +5,7 @@ load_targets(db types utils)
 begin_target(LIBRARY)
 
 populate_sources()
-configure_packages_and_pch(DEPENDENCIES stl)
+configure_packages_and_pch(DEPENDENCIES stl fmt)
 
 target_link_libraries(${target_name} PUBLIC db types utils)
 

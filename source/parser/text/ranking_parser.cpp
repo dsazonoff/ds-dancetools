@@ -44,7 +44,7 @@ void ranking_parser::parse_results_dir(const fs::path & results_dir)
 {
     _ctx.working_dir = _root / results_dir;
     const auto & manifest_path = _ctx.working_dir / s_manifest;
-    std::cout << std::format("Reading manifest: {}\n", manifest_path.generic_string());
+    std::cout << fmt::format("Reading manifest: {}\n", manifest_path.generic_string());
     _ctx.manifest = utils::read_json(manifest_path);
     _ctx.competition = parse_competition(_ctx.manifest);
     _ctx.groups = parse_groups(_ctx.manifest);
@@ -78,7 +78,7 @@ db::competition ranking_parser::parse_competition(const json::value & manifest) 
             items.reserve(3);
             boost::split(items, date, boost::is_any_of("-"));
             if (items.size() != 3)
-                throw std::logic_error{std::format("Could not parse date: {}", date)};
+                throw std::logic_error{fmt::format("Could not parse date: {}", date)};
             const auto year = boost::lexical_cast<int64_t>(items[0]);
             const auto month = boost::lexical_cast<int64_t>(items[1]);
             const auto day = boost::lexical_cast<int64_t>(items[2]);
@@ -94,7 +94,7 @@ db::competition ranking_parser::parse_competition(const json::value & manifest) 
     }
     catch (const std::exception & ex)
     {
-        throw std::logic_error{std::format("Could not parse manifest: {}\nError: {}", _ctx.working_dir.generic_string(), ex.what())};
+        throw std::logic_error{fmt::format("Could not parse manifest: {}\nError: {}", _ctx.working_dir.generic_string(), ex.what())};
     }
 
     return c;
@@ -117,7 +117,7 @@ std::map<std::string, db::group> ranking_parser::parse_groups(const json::value 
     }
     catch (const std::exception & ex)
     {
-        throw std::logic_error{std::format("Could not parse manifest: {}\nError: {}", _ctx.working_dir.generic_string(), ex.what())};
+        throw std::logic_error{fmt::format("Could not parse manifest: {}\nError: {}", _ctx.working_dir.generic_string(), ex.what())};
     }
 
     return g;
@@ -125,17 +125,17 @@ std::map<std::string, db::group> ranking_parser::parse_groups(const json::value 
 
 void ranking_parser::parse_results_file(const fs::path & path)
 {
-    std::cout << std::format("Parsing file: {}\n", path.generic_string());
+    std::cout << fmt::format("Parsing file: {}\n", path.generic_string());
     const auto & group_id = path.stem().generic_string();
     const auto group_it = _ctx.groups.find(group_id);
     if (group_it == _ctx.groups.end())
-        throw std::logic_error{std::format("Group is not in manifest: {}", group_id)};
+        throw std::logic_error{fmt::format("Group is not in manifest: {}", group_id)};
     const auto & group_name = group_it->first;
     _ctx.group = group_it->second;
 
     std::ifstream is{path.generic_string()};
     if (!is.is_open())
-        throw std::logic_error{std::format("Could not read file: {}", path.generic_string())};
+        throw std::logic_error{fmt::format("Could not read file: {}", path.generic_string())};
 
     ds_assert(_result_callback);
     _ctx.file = path;
@@ -226,7 +226,7 @@ std::tuple<std::optional<db::dancer>, std::optional<db::dancer>, db::result> ran
     }
     catch (const std::exception & ex)
     {
-        throw std::logic_error{std::format("Could not parse line: \"{}\" - {}\nFile: {}", line, ex.what(), _ctx.file.generic_string())};
+        throw std::logic_error{fmt::format("Could not parse line: \"{}\" - {}\nFile: {}", line, ex.what(), _ctx.file.generic_string())};
     }
 }
 

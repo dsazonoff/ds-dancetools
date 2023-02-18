@@ -1,19 +1,19 @@
 // This is an independent project of an individual developer. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++, C#, and Java: http://www.viva64.com
 
-#include "fmt.h"
+#include "formatter.h"
 
 
 namespace ds::exp::hugo
 {
 
-fmt::fmt(std::ostream & os)
+formatter::formatter(std::ostream & os)
     : _os{os}
 {
 }
-fmt & fmt::yaml_header(std::string title, std::string url, std::string date, std::string image)
+formatter & formatter::yaml_header(std::string title, std::string url, std::string date, std::string image)
 {
-    _os << std::format(
+    _os << fmt::format(
         R"(---
 title: {}
 url: "{}"
@@ -31,53 +31,53 @@ sections:
     return *this;
 }
 
-std::string & fmt::fix_date(std::string & date)
+std::string & formatter::fix_date(std::string & date)
 {
     if (date.empty())
     {
         const auto now = std::chrono::system_clock::now();
-        date = std::format("{:%Y}-{:%m}-{:%d}T00:00:00+00:00", now, now, now);
+        date = fmt::format("{:%Y-:%m-:%d}T00:00:00+00:00", now);
     }
 
     return date;
 }
 
-fmt & fmt::h1(const std::string & text)
+formatter & formatter::h1(const std::string & text)
 {
     _os << "# " << text << "\n";
     return *this;
 }
 
-fmt & fmt::h2(const std::string & text)
+formatter & formatter::h2(const std::string & text)
 {
     _os << "## " << text << "\n";
     return *this;
 }
 
-fmt & fmt::h3(const std::string & text)
+formatter & formatter::h3(const std::string & text)
 {
     _os << "### " << text << "\n";
     return *this;
 }
 
-fmt & fmt::h4(const std::string & text)
+formatter & formatter::h4(const std::string & text)
 {
     _os << "#### " << text << "\n";
     return *this;
 }
 
-fmt & fmt::h5(const std::string & text)
+formatter & formatter::h5(const std::string & text)
 {
     _os << "##### " << text << "\n";
     return *this;
 }
 
-std::string fmt::url(const std::string & text, const std::string & url)
+std::string formatter::url(const std::string & text, const std::string & url)
 {
-    return std::format("[{}]({})", text, url);
+    return fmt::format("[{}]({})", text, url);
 }
 
-fmt & fmt::couples_header(bool print_stars)
+formatter & formatter::couples_header(bool print_stars)
 {
     if (print_stars)
         _os << "| Партнёр | &nbsp;&nbsp;&nbsp; | Звёзды | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | Партнёрша | &nbsp;&nbsp;&nbsp; | Звёзды |\n";
@@ -88,26 +88,26 @@ fmt & fmt::couples_header(bool print_stars)
     return *this;
 }
 
-fmt & fmt::table_footer()
+formatter & formatter::table_footer()
 {
     _os << "\n";
     return *this;
 }
 
-fmt & fmt::couple(const std::string & name1, double stars1, const std::string & name2, double stars2)
+formatter & formatter::couple(const std::string & name1, double stars1, const std::string & name2, double stars2)
 {
-    _os << std::format("|{}|&nbsp;|{}| |{}|&nbsp;|{}|\n", name1, stars1, name2, stars2);
+    _os << fmt::format("|{}|&nbsp;|{}| |{}|&nbsp;|{}|\n", name1, stars1, name2, stars2);
     return *this;
 }
 
-fmt & fmt::couple(const std::string & name1, const std::string & name2)
+formatter & formatter::couple(const std::string & name1, const std::string & name2)
 {
-    _os << std::format("|{}|&nbsp;| | |{}|&nbsp;| |\n", name1, name2);
+    _os << fmt::format("|{}|&nbsp;| | |{}|&nbsp;| |\n", name1, name2);
 
     return *this;
 }
 
-fmt & fmt::dancers_header(bool print_stars)
+formatter & formatter::dancers_header(bool print_stars)
 {
     if (print_stars)
         _os << "| Фамилия Имя | &nbsp;&nbsp;&nbsp; | &nbsp; |\n";
@@ -118,34 +118,34 @@ fmt & fmt::dancers_header(bool print_stars)
     return *this;
 }
 
-fmt & fmt::dancer(const std::string & name, double stars)
+formatter & formatter::dancer(const std::string & name, double stars)
 {
-    _os << std::format("|{}|&nbsp;|{}|\n", name, stars);
+    _os << fmt::format("|{}|&nbsp;|{}|\n", name, stars);
     return *this;
 }
 
-fmt & fmt::dancer(const std::string & name)
+formatter & formatter::dancer(const std::string & name)
 {
-    _os << std::format("|{}|&nbsp;| |\n", name);
+    _os << fmt::format("|{}|&nbsp;| |\n", name);
     return *this;
 }
 
-fmt & fmt::raw(const std::string & text)
+formatter & formatter::raw(const std::string & text)
 {
     _os << text;
     return *this;
 }
 
-fmt & fmt::br(size_t count)
+formatter & formatter::br(size_t count)
 {
     for (size_t i = 0; i < count; ++i)
         _os << '\n';
     return *this;
 }
 
-fmt & fmt::list(const std::string & text)
+formatter & formatter::list(const std::string & text)
 {
-    _os << std::format("- {}\n", text);
+    _os << fmt::format("- {}\n", text);
     return *this;
 }
 

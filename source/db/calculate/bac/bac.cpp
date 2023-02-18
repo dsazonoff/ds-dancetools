@@ -75,7 +75,7 @@ void bac::proceed_group(const group & gr)
         date << _ctx.competition.start_date;
         if (_ctx.competition.start_date != _ctx.competition.end_date)
             date << "-" << _ctx.competition.end_date;
-        throw std::logic_error{std::format("Invalid results: {} | {} | {}", date.str(), comp_name, gr_name)};
+        throw std::logic_error{fmt::format("Invalid results: {} | {} | {}", date.str(), comp_name, gr_name)};
     }
 
     constexpr const size_t n_places = 3;

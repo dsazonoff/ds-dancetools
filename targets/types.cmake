@@ -5,6 +5,6 @@ include_guard(GLOBAL)
 begin_target(LIBRARY)
 
 populate_sources()
-configure_packages_and_pch(DEPENDENCIES stl)
+configure_packages_and_pch(DEPENDENCIES stl fmt)
 
 end_target()

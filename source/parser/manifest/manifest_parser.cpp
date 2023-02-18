@@ -32,7 +32,7 @@ void manifest_parser::set_group_callback(db::cb::group_name callback)
 void manifest_parser::parse()
 {
     const auto & manifest_path = _root / s_manifest;
-    std::cout << std::format("Reading manifest: {}\n\n", manifest_path.generic_string());
+    std::cout << fmt::format("Reading manifest: {}\n\n", manifest_path.generic_string());
 
     try
     {
@@ -50,7 +50,7 @@ void manifest_parser::parse()
     }
     catch (const std::exception & ex)
     {
-        throw std::logic_error{std::format("Could not parse manifest: {}\nError: {}", manifest_path.generic_string(), ex.what())};
+        throw std::logic_error{fmt::format("Could not parse manifest: {}\nError: {}", manifest_path.generic_string(), ex.what())};
     }
 }
 

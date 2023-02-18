@@ -5,7 +5,7 @@ include_guard(GLOBAL)
 begin_target(EXECUTABLE)
 
 populate_sources()
-configure_packages_and_pch(DEPENDENCIES stl boost)
+configure_packages_and_pch(DEPENDENCIES stl boost fmt)
 target_link_libraries(${target_name} PUBLIC ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
 
 end_target()

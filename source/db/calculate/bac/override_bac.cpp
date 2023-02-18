@@ -25,7 +25,7 @@ void override_bac::set_config(const fs::path & path)
 
     try
     {
-        std::cout << std::format("Parsing override config: {}\n", path.generic_string());
+        std::cout << fmt::format("Parsing override config: {}\n", path.generic_string());
         const auto & json = ds::utils::read_json(path);
         const auto dancers = json.at("dancers").as_array();
         _rules.reserve(dancers.size());
@@ -83,7 +83,7 @@ void override_bac::set_config(const fs::path & path)
     }
     catch (const std::exception & ex)
     {
-        throw std::logic_error{std::format("Could not parse override config: {}\n{}", path.generic_string(), ex.what())};
+        throw std::logic_error{fmt::format("Could not parse override config: {}\n{}", path.generic_string(), ex.what())};
     }
 }
 
@@ -145,7 +145,7 @@ void override_bac::on_move(const override_bac::move_dancer & data, int64_t start
     if (dancers.empty())
         return;
 
-    std::cout << std::format("Overriding (moving) results for: {} | {} -> {}\n", data.name, gn_from[0].title, gn_to[0].title);
+    std::cout << fmt::format("Overriding (moving) results for: {} | {} -> {}\n", data.name, gn_from[0].title, gn_to[0].title);
 
     const auto & d_ids = utils::ids(dancers);
     const auto & results = _db.get_all<bac_result>(
@@ -182,7 +182,7 @@ void override_bac::on_remove(const override_bac::remove_dancer & data, int64_t s
     if (dancers.empty())
         return;
 
-    std::cout << std::format("Overriding (removing) results for: {} | {}\n", data.name, gn_from[0].title);
+    std::cout << fmt::format("Overriding (removing) results for: {} | {}\n", data.name, gn_from[0].title);
 
     const auto & d_ids = utils::ids(dancers);
     _db.remove_all<bac_result>(
@@ -216,7 +216,7 @@ void override_bac::on_add_points(const override_bac::add_points & data, int64_t 
     if (dancers.empty())
         return;
 
-    std::cout << std::format("Overriding (adding points: {}) results for: {} | {} | {}\n", data.points, data.name, gn[0].title, comp.title);
+    std::cout << fmt::format("Overriding (adding points: {}) results for: {} | {} | {}\n", data.points, data.name, gn[0].title, comp.title);
 
     const auto & d_ids = utils::ids(dancers);
     const auto & results = _db.get_all<bac_result>(
@@ -254,7 +254,7 @@ void override_bac::on_remove(const override_bac::remove_couple & data, int64_t s
     if (dancers.empty())
         return;
 
-    std::cout << std::format("!!NOT IMPLEMENTED! Overriding (removing) results for: {} / {} | {}\n", data.male, data.female, gn_from[0].title);
+    std::cout << fmt::format("!!NOT IMPLEMENTED! Overriding (removing) results for: {} / {} | {}\n", data.male, data.female, gn_from[0].title);
 
     // TODO: implement
 
