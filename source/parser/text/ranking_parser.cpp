@@ -62,15 +62,18 @@ void ranking_parser::parse_results_dir(const fs::path & results_dir)
 
 db::competition ranking_parser::parse_competition(const json::value & manifest) const
 {
-    db::competition c = {};
     try
     {
+        db::competition c = {};
+
         const auto & obj = manifest.at("competition");
         const std::string title = obj.at("title").as_string().c_str();
         const std::string start_date = obj.at("start_date").as_string().c_str();
         const std::string end_date = obj.at("end_date").as_string().c_str();
         const std::string url = obj.at("url").as_string().c_str();
+        const std::string host_city = obj.at("host_city").as_string().c_str();
         const double points_scale = obj.at("points_scale").as_double();
+        const double foreign_scale = obj.at("foreign_scale").as_double();
 
         const auto parse_date = [](const std::string & date)
         {
@@ -90,21 +93,24 @@ db::competition ranking_parser::parse_competition(const json::value & manifest) 
         c.start_date = parse_date(start_date);
         c.end_date = parse_date(end_date);
         c.url = url;
+        c.host_city = host_city;
         c.points_scale = points_scale;
+        c.foreign_scale = foreign_scale;
+
+        return c;
     }
     catch (const std::exception & ex)
     {
         throw std::logic_error{fmt::format("Could not parse manifest: {}\nError: {}", _ctx.working_dir.generic_string(), ex.what())};
     }
-
-    return c;
 }
 
 std::map<std::string, db::group> ranking_parser::parse_groups(const json::value & manifest) const
 {
-    std::map<std::string, db::group> g;
     try
     {
+        std::map<std::string, db::group> g;
+
         const auto & groups = manifest.at("groups").as_array();
         for (const auto & obj : groups)
         {
@@ -114,13 +120,13 @@ std::map<std::string, db::group> ranking_parser::parse_groups(const json::value 
             const auto is_solo = obj.at("solo").as_bool();
             g.emplace(id_name, db::group{0, 0, min_year, max_year, is_solo});
         }
+
+        return g;
     }
     catch (const std::exception & ex)
     {
         throw std::logic_error{fmt::format("Could not parse manifest: {}\nError: {}", _ctx.working_dir.generic_string(), ex.what())};
     }
-
-    return g;
 }
 
 void ranking_parser::parse_results_file(const fs::path & path)
@@ -141,12 +147,12 @@ void ranking_parser::parse_results_file(const fs::path & path)
     _ctx.file = path;
     for (std::string line; !!std::getline(is, line);)
     {
-        auto [dancer1, dancer2, result] = parse_line(line);
-        _result_callback(_ctx.competition, _ctx.group, db::group_name{0, group_name, std::string{}}, std::move(dancer1), std::move(dancer2), result);
+        auto [dancer1, dancer2, result, city] = parse_line(line);
+        _result_callback(_ctx.competition, _ctx.group, db::group_name{0, group_name, std::string{}}, std::move(dancer1), std::move(dancer2), result, std::move(city));
     }
 }
 
-std::tuple<std::optional<db::dancer>, std::optional<db::dancer>, db::result> ranking_parser::parse_line(const std::string & line) const
+std::tuple<std::optional<db::dancer>, std::optional<db::dancer>, db::result, db::city> ranking_parser::parse_line(const std::string & line) const
 {
     static const auto parse_place = [](const std::string & text)
     {
@@ -209,6 +215,18 @@ std::tuple<std::optional<db::dancer>, std::optional<db::dancer>, db::result> ran
         return std::tuple(d1, d2);
     };
 
+    static const auto parse_city = [](const std::string& text)
+    {
+        std::vector<std::string> words;
+        boost::algorithm::split_regex(words, text, boost::regex(" / "));
+        ds_assert(!words.empty());
+
+        db::city c = {};
+        c.name = words[0];
+
+        return c;
+    };
+
     try
     {
         std::vector<std::string> tokens;
@@ -221,8 +239,9 @@ std::tuple<std::optional<db::dancer>, std::optional<db::dancer>, db::result> ran
         const auto & couple_text = tokens[2];
         const auto result = parse_place(place_text);
         auto [d1, d2] = parse_names(couple_text);
+        auto city = parse_city(tokens[3]);
 
-        return std::tuple{std::move(d1), std::move(d2), result};
+        return std::tuple{std::move(d1), std::move(d2), result, std::move(city)};
     }
     catch (const std::exception & ex)
     {

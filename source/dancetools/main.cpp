@@ -13,8 +13,7 @@
 
 namespace
 {
-constexpr const auto s_results_path = "data/input/text/become-a-champion";
-// constexpr const auto s_results_path = "data/input/text/debug";
+constexpr const auto s_results_path = "data/input/text/2023";
 } // namespace
 
 
@@ -44,18 +43,18 @@ int main()
         }
 
         {
-            const auto override_path = fs::path{s_results_path} / "override-2022.json";
+            const auto override_path = fs::path{s_results_path} / "override-2023.json";
             db::bac b{db};
-            b.evaluate(20220000, 20230000, override_path);
+            b.evaluate(20230000, 20240000, override_path);
         }
 
         {
             exp::hugo::hugo h{db};
-            h.set_output_dir("../sportdance-by/content/pages/db");
+            h.set_output_dir("../sportdance-by/content/pages/db/2023");
             h.set_suffix("become-a-champion");
-            const auto manifest_path = fs::path{s_results_path} / "hugo-2022.json";
+            const auto manifest_path = fs::path{s_results_path} / "hugo-2023.json";
             h.set_manifest(manifest_path);
-            h.export_all(20220000, 20230000);
+            h.export_all(20230000, 20240000);
         }
     }
     catch (const std::exception & ex)

@@ -14,6 +14,7 @@ public:
     cb::result callback();
 
 private:
+    void add_city(city & c);
     void add_competition(competition & cp);
     void add_group(group & g);
     void add_dancer(std::optional<dancer> & d);

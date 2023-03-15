@@ -11,8 +11,9 @@
 
 namespace
 {
-constexpr const auto s_allowed_list = "Список участников, допущенных к заключительному этапу серии гран-при \"Стань чемпионом!\" - \"Альянс Трофи\"";
-constexpr const auto s_full_list = "Рейтинг всех участников проекта серии гран-при \"Стань чемпионом!\"";
+
+constexpr const auto s_allowed_list = "ТОП-12 участников серии гран-при \"Стань чемпионом!\"";
+constexpr const auto s_full_list = "Общий рейтинг участников серии гран-при \"Стань чемпионом!\"";
 constexpr const auto s_rules_list = "Положение о соревнованиях серии гран-при \"Стань чемпионом!\"";
 constexpr const auto s_competition_list = "Результаты прошедших турниров серии гран-при \"Стань чемпионом!\"";
 constexpr const auto s_competition_results = "Результаты турнира: ";
@@ -57,7 +58,7 @@ void hugo::set_manifest(const fs::path & path)
         const auto & json = utils::read_json(path);
         const auto & cfg = json.at("config");
 
-        _minimum_points = cfg.at("minimum_points").as_double();
+        _accept_participants = cfg.at("accept_couples").as_int64();
         _title = cfg.at("title").as_string().c_str();
         _root_url = cfg.at("url").as_string().c_str();
         _banner = cfg.at("banner").as_string().c_str();
@@ -90,6 +91,13 @@ std::string hugo::get_surname_key(const std::string & name1, const std::string &
             ss << token;
     }
     return ss.str();
+}
+
+std::string hugo::get_points_key(double points, const std::string & name1, const std::string & name2)
+{
+    points = 100000.0 - points * 100.0; // Some magic for string-based sorting in map
+    std::string r =  fmt::format("{:.0f} {}", points, get_surname_key(name1, name2));
+    return r;
 }
 
 void hugo::export_all(int64_t start_date, int64_t end_date)
@@ -133,7 +141,8 @@ void hugo::export_passed(const fs::path & path, int64_t start_date, int64_t end_
         s_allowed_list,
         extra_header,
         true,
-        false);
+        true,
+        true);
 }
 
 void hugo::export_full_list(const fs::path & path, int64_t start_date, int64_t end_date, const std::string & url)
@@ -169,11 +178,18 @@ void hugo::export_full_list(const fs::path & path, int64_t start_date, int64_t e
         s_full_list,
         extra.str(),
         false,
-        true);
+        true,
+        false);
 }
 
 void hugo::export_competition(const fs::path & path, const std::string & url, const db::competition & comp)
 {
+    const auto extra_header =
+        fmt::format("{}\n\nГород: {}\n\nКоэффициент турнира: {:.1f}\n\nКоэффициент для иногородних участников: {:.1f}",
+            formatter::url(s_results, comp.url),
+            comp.host_city,
+            comp.points_scale,
+            comp.foreign_scale + 1.0);
     export_custom(
         path,
         comp.start_date,
@@ -181,12 +197,13 @@ void hugo::export_competition(const fs::path & path, const std::string & url, co
         comp.title,
         url,
         fmt::format("{}{}", s_competition_results, comp.title),
-        fmt::format("{}", formatter::url(s_results, comp.url)),
+        extra_header,
         false,
-        true);
+        true,
+        false);
 }
 
-void hugo::export_custom(const fs::path & path, int64_t start_date, int64_t end_date, const std::string & title, const std::string & url, const std::string & header, const std::string & extra_header, bool only_passed_dancers, bool print_points)
+void hugo::export_custom(const fs::path & path, int64_t start_date, int64_t end_date, const std::string & title, const std::string & url, const std::string & header, const std::string & extra_header, bool only_passed_dancers, bool print_points, bool sort_points)
 {
     std::cout << fmt::format("Exporting list of couples: {}\n", path.generic_string());
     std::ofstream os{path};
@@ -202,18 +219,14 @@ void hugo::export_custom(const fs::path & path, int64_t start_date, int64_t end_
         .raw(extra_header)
         .br();
 
-    const auto & groups = _db.get_all<db::group>();
-    const auto & competitions = _db.get_all<db::competition>(
-        where(
-            c(&db::competition::start_date) >= start_date
-            and c(&db::competition::end_date) <= end_date));
+    const auto & groups = _db.get_all<db::group>(order_by(&db::group::min_year).desc());
 
-    static const auto dancers_ids_from_stars = [](const std::vector<db::bac_stars> & input)
+    static const auto dancers_ids_from_points = [](const std::vector<db::bac_points> & input)
     {
         std::vector<int64_t> ids;
         ids.reserve(input.size());
         std::transform(input.begin(), input.end(), std::back_inserter(ids),
-            [](const db::bac_stars & s)
+            [](const db::bac_points & s)
             {
                 return s.dancer_id;
             });
@@ -230,21 +243,38 @@ void hugo::export_custom(const fs::path & path, int64_t start_date, int64_t end_
             if (_couple_groups.find(n.name) == _couple_groups.end())
                 continue;
 
-            const auto & all_stars = _db.get_all<db::bac_stars>(
+            const auto & all_points = _db.get_all<db::bac_points>(
                 where(
-                    c(&db::bac_stars::group_id) == g.id
-                    and c(&db::bac_stars::start_date) >= start_date
-                    and c(&db::bac_stars::end_date) <= end_date));
-            if (all_stars.empty())
+                    c(&db::bac_points::group_id) == g.id
+                    and c(&db::bac_points::start_date) >= start_date
+                    and c(&db::bac_points::end_date) <= end_date),
+                order_by(&db::bac_points::points).desc());
+            if (all_points.empty())
                 continue;
 
-            const auto & dancers_ids = dancers_ids_from_stars(all_stars);
+            const auto pass_points = [&]()
+            {
+                auto passed = 0;
+                auto last_pts = all_points[0].points;
+                for (const auto & pts : all_points)
+                {
+                    if (passed == _accept_participants)
+                        break;
+                    if (last_pts != pts.points)
+                        ++passed;
+                    last_pts = pts.points;
+                }
+                return last_pts;
+            }();
+
+            const auto & dancers_ids = dancers_ids_from_points(all_points);
             const auto & couples = _db.get_all<db::couple>(
                 where(
                     in(&db::couple::dancer_id1, dancers_ids)
                     or in(&db::couple::dancer_id2, dancers_ids)));
 
-            std::map<std::string, std::tuple<db::dancer, db::bac_stars, db::dancer, db::bac_stars>> couple_sorted;
+            std::map<std::string, std::tuple<db::dancer, db::bac_points, db::dancer, db::bac_points>> couples_sorted_by_name;
+            std::map<std::string, std::tuple<db::dancer, db::bac_points, db::dancer, db::bac_points>> couples_sorted_by_points;
             for (const auto & cpl : couples)
             {
                 if (cpl.is_solo)
@@ -253,16 +283,16 @@ void hugo::export_custom(const fs::path & path, int64_t start_date, int64_t end_
                 const auto & d1 = _db.get<db::dancer>(cpl.dancer_id1.value());
                 const auto & d2 = _db.get<db::dancer>(cpl.dancer_id2.value());
 
-                const auto & b_s1 = _db.get_all<db::bac_stars>(
-                    where(c(&db::bac_stars::dancer_id) == d1.id
-                        and c(&db::bac_stars::group_id) == g.id
-                        and c(&db::bac_stars::start_date) == start_date
-                        and c(&db::bac_stars::end_date) == end_date));
-                const auto & b_s2 = _db.get_all<db::bac_stars>(
-                    where(c(&db::bac_stars::dancer_id) == d2.id
-                        and c(&db::bac_stars::group_id) == g.id
-                        and c(&db::bac_stars::start_date) == start_date
-                        and c(&db::bac_stars::end_date) == end_date));
+                const auto & b_s1 = _db.get_all<db::bac_points>(
+                    where(c(&db::bac_points::dancer_id) == d1.id
+                        and c(&db::bac_points::group_id) == g.id
+                        and c(&db::bac_points::start_date) == start_date
+                        and c(&db::bac_points::end_date) == end_date));
+                const auto & b_s2 = _db.get_all<db::bac_points>(
+                    where(c(&db::bac_points::dancer_id) == d2.id
+                        and c(&db::bac_points::group_id) == g.id
+                        and c(&db::bac_points::start_date) == start_date
+                        and c(&db::bac_points::end_date) == end_date));
 
                 // Possible case when couple was changed between competitions
                 if (b_s1.empty() || b_s2.empty())
@@ -270,24 +300,28 @@ void hugo::export_custom(const fs::path & path, int64_t start_date, int64_t end_
                 ds_assert(b_s1.size() == 1);
                 ds_assert(b_s2.size() == 1);
 
+                const auto points = std::min(b_s1[0].points, b_s2[0].points);
                 if (only_passed_dancers)
                 {
-                    const auto stars = std::max(b_s1[0].stars, b_s2[0].stars);
-                    if (stars < _minimum_points)
+                    if (points < pass_points)
                         continue;
                 }
 
-                couple_sorted[get_surname_key(d1.name, d2.name)] = std::tuple{d1, b_s1[0], d2, b_s2[0]};
+                const auto name_key = get_surname_key(d1.name, d2.name);
+                const auto points_key = get_points_key(points, d1.name, d2.name);
+                const auto cpl_tuple = std::tuple{d1, b_s1[0], d2, b_s2[0]};
+                couples_sorted_by_name[name_key] = cpl_tuple;
+                couples_sorted_by_points[points_key] = cpl_tuple;
             }
 
             f.h4(n.title)
                 .couples_header(print_points);
 
-            for (const auto & it : couple_sorted)
+            for (const auto & it : (sort_points ? couples_sorted_by_points : couples_sorted_by_name))
             {
                 const auto & [d1, b_s1, d2, b_s2] = it.second;
                 if (print_points)
-                    f.couple(d1.name, b_s1.stars, d2.name, b_s2.stars);
+                    f.couple(d1.name, b_s1.points, d2.name, b_s2.points);
                 else
                     f.couple(d1.name, d2.name);
             }
@@ -306,48 +340,70 @@ void hugo::export_custom(const fs::path & path, int64_t start_date, int64_t end_
             if (_solo_groups.find(n.name) == _solo_groups.end())
                 continue;
 
-            const auto & all_stars = _db.get_all<db::bac_stars>(
+            const auto & all_points = _db.get_all<db::bac_points>(
                 where(
-                    c(&db::bac_stars::group_id) == g.id
-                    and c(&db::bac_stars::start_date) >= start_date
-                    and c(&db::bac_stars::end_date) <= end_date));
-            if (all_stars.empty())
+                    c(&db::bac_points::group_id) == g.id
+                    and c(&db::bac_points::start_date) >= start_date
+                    and c(&db::bac_points::end_date) <= end_date),
+                order_by(&db::bac_points::points).desc());
+            if (all_points.empty())
                 continue;
-            const auto & dancers_ids = dancers_ids_from_stars(all_stars);
+
+            const auto pass_points = [&]()
+            {
+                auto passed = 0;
+                auto last_pts = all_points[0].points;
+                for (const auto & pts : all_points)
+                {
+                    if (passed == _accept_participants)
+                        break;
+                    if (last_pts != pts.points)
+                        ++passed;
+                    last_pts = pts.points;
+                }
+                return last_pts;
+            }();
+
+            const auto & dancers_ids = dancers_ids_from_points(all_points);
             const auto & dancers = _db.get_all<db::dancer>(
                 where(
                     in(&db::dancer::id, dancers_ids)));
 
-            std::map<std::string, std::tuple<db::dancer, db::bac_stars>> dancers_sorted;
+            std::map<std::string, std::tuple<db::dancer, db::bac_points>> dancers_sorted_by_name;
+            std::map<std::string, std::tuple<db::dancer, db::bac_points>> dancers_sorted_by_points;
             for (const auto & d : dancers)
             {
-                const auto & b_s = _db.get_all<db::bac_stars>(
-                    where(c(&db::bac_stars::dancer_id) == d.id
-                        and c(&db::bac_stars::group_id) == g.id
-                        and c(&db::bac_stars::start_date) == start_date
-                        and c(&db::bac_stars::end_date) == end_date));
+                const auto & b_s = _db.get_all<db::bac_points>(
+                    where(c(&db::bac_points::dancer_id) == d.id
+                        and c(&db::bac_points::group_id) == g.id
+                        and c(&db::bac_points::start_date) == start_date
+                        and c(&db::bac_points::end_date) == end_date));
                 ds_assert(b_s.size() == 1);
 
+                const auto points = b_s[0].points;
                 if (only_passed_dancers)
                 {
-                    const auto stars = b_s[0].stars;
-                    if (stars < _minimum_points)
+                    if (points < pass_points)
                         continue;
                 }
 
-                dancers_sorted[get_surname_key(d.name)] = std::tuple{d, b_s[0]};
+                const auto name_key = get_surname_key(d.name);
+                const auto points_key = get_points_key(points, d.name);
+                const auto d_tuple = std::tuple{d, b_s[0]};
+                dancers_sorted_by_name[name_key] = d_tuple;
+                dancers_sorted_by_points[points_key] = d_tuple;
             }
 
             f.h4(n.title)
                 .dancers_header(print_points);
 
-            for (const auto & it : dancers_sorted)
+            for (const auto & it : (sort_points ? dancers_sorted_by_points : dancers_sorted_by_name))
             {
                 const auto & [d, b_s] = it.second;
                 if (print_points)
                 {
-                    const auto stars = b_s.stars;
-                    f.dancer(d.name, stars);
+                    const auto points = b_s.points;
+                    f.dancer(d.name, points);
                 }
                 else
                     f.dancer(d.name);
@@ -388,13 +444,14 @@ void hugo::export_all_dancers(const fs::path & path, const std::string & url, in
             continue;
         if (!_export_all)
         {
-            const auto & stars = _db.get_all<db::bac_stars>(
+            const auto & points = _db.get_all<db::bac_points>(
                 where(
-                    c(&db::bac_stars::dancer_id) == d.id
-                    and c(&db::bac_stars::start_date) >= start_date
-                    and c(&db::bac_stars::end_date) <= end_date
-                    and c(&db::bac_stars::stars) >= _minimum_points));
-            if (stars.empty())
+                    c(&db::bac_points::dancer_id) == d.id
+                    and c(&db::bac_points::start_date) >= start_date
+                    and c(&db::bac_points::end_date) <= end_date)
+                // TODO: only top "_accept_couples" couples
+            );
+            if (points.empty())
                 continue;
         }
 
@@ -403,7 +460,8 @@ void hugo::export_all_dancers(const fs::path & path, const std::string & url, in
 
     static const auto hash_dancer = [](const db::dancer & dancer)
     {
-        const auto data = fmt::format("{}{}", dancer.name, dancer.birthday);
+        static constexpr const auto salt = "b8c08c37-d12c-4989-bb92-bd97578fa7f3";
+        const auto data = fmt::format("{}{}{}", salt, dancer.name, dancer.birthday);
         boost::uuids::detail::sha1 sha1;
         sha1.process_bytes(&data[0], data.size());
         boost::uuids::detail::sha1::digest_type d;
@@ -411,6 +469,7 @@ void hugo::export_all_dancers(const fs::path & path, const std::string & url, in
         std::string result;
         const auto p = reinterpret_cast<const char *>(&d);
         boost::algorithm::hex(p, p + sizeof(d), std::back_inserter(result));
+        boost::to_lower(result);
         return result;
     };
 
@@ -446,7 +505,7 @@ void hugo::export_dancer(const fs::path & path, const std::string & url, const d
         const auto & gr_name = _db.get<db::group_name>(g.group_name_id);
         f.h3(gr_name.title);
 
-        f.raw("| Звёзды | &nbsp;&nbsp;&nbsp; | Турнир |\n|--:|-|:--|\n");
+        f.raw("| Баллы | &nbsp;&nbsp;&nbsp; | Турнир |\n|--:|-|:--|\n");
         for (const auto & comp : competitions)
         {
             const auto & results = _db.get_all<db::bac_result>(
@@ -456,21 +515,21 @@ void hugo::export_dancer(const fs::path & path, const std::string & url, const d
                     and c(&db::bac_result::dancer_id) == dancer.id));
             if (results.empty())
                 continue;
-            const auto & stars = _db.get_all<db::bac_stars>(
+            const auto & points = _db.get_all<db::bac_points>(
                 where(
-                    c(&db::bac_stars::group_id) == g.id
-                    and c(&db::bac_stars::dancer_id) == dancer.id
-                    and c(&db::bac_stars::start_date) >= comp.start_date
-                    and c(&db::bac_stars::end_date) <= comp.end_date));
-            ds_assert(stars.size() == 1);
-            f.raw(fmt::format("|{}| &nbsp;&nbsp;&nbsp; |{}|", stars[0].stars, comp.title)).br();
+                    c(&db::bac_points::group_id) == g.id
+                    and c(&db::bac_points::dancer_id) == dancer.id
+                    and c(&db::bac_points::start_date) >= comp.start_date
+                    and c(&db::bac_points::end_date) <= comp.end_date));
+            ds_assert(points.size() == 1);
+            f.raw(fmt::format("|{:.1f}| &nbsp;&nbsp;&nbsp; |{}|", points[0].points, comp.title)).br();
         }
 
-        const auto & total = _db.get_all<db::bac_stars>(
-            where(c(&db::bac_stars::dancer_id) == dancer.id
-                and c(&db::bac_stars::group_id) == g.id
-                and c(&db::bac_stars::start_date) == start_date
-                and c(&db::bac_stars::end_date) == end_date));
+        const auto & total = _db.get_all<db::bac_points>(
+            where(c(&db::bac_points::dancer_id) == dancer.id
+                and c(&db::bac_points::group_id) == g.id
+                and c(&db::bac_points::start_date) == start_date
+                and c(&db::bac_points::end_date) == end_date));
         if (total.empty())
             continue;
 
@@ -478,7 +537,7 @@ void hugo::export_dancer(const fs::path & path, const std::string & url, const d
 
         f.raw("| Итого: | &nbsp;&nbsp;&nbsp; |  |")
             .br()
-            .raw(fmt::format("|{}| &nbsp;&nbsp;&nbsp; | |", total[0].stars))
+            .raw(fmt::format("|{:.1f}| &nbsp;&nbsp;&nbsp; | |", total[0].points))
             .br(2);
     }
 }

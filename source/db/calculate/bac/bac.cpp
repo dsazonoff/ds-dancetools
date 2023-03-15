@@ -33,7 +33,7 @@ void bac::evaluate(int64_t start_date, int64_t end_date, const fs::path& overrid
     overrider.set_config(override_path);
     overrider.apply(start_date, end_date);
 
-    update_stars(start_date, end_date);
+    update_points(start_date, end_date);
 
     // Evaluate each competition
     for (const auto & comp : _ctx.competitions)
@@ -48,6 +48,13 @@ void bac::evaluate(int64_t start_date, int64_t end_date, const fs::path& overrid
 void bac::proceed_competition(const competition & comp)
 {
     _ctx.competition = comp;
+    _ctx.host_city_id = 0;
+    const auto comp_city = _db.get_all<city>(
+        where(c(&city::name) == _ctx.competition.host_city)
+    );
+    ds_assert(comp_city.size() <= 1);
+    if (comp_city.size() == 1)
+        _ctx.host_city_id = comp_city[0].id;
     for (const auto & group : _ctx.groups)
         proceed_group(group);
 }
@@ -98,9 +105,9 @@ void bac::proceed_group(const group & gr)
             last_index = index;
         }
 
-        const auto stars = std::round(static_cast<double>(n_places - place + 1) * _ctx.competition.points_scale);
+        const auto points = std::round(static_cast<double>(n_places - place + 1));
         for (auto i = first_index; i <= last_index; ++i)
-            proceed_result(results[i], place, stars);
+            proceed_result(results[i], place, points);
 
         first_index = last_index + 1;
         if (first_index >= results.size())
@@ -108,8 +115,13 @@ void bac::proceed_group(const group & gr)
     }
 }
 
-void bac::proceed_result(const result & r, size_t place, double stars)
+void bac::proceed_result(const result & r, size_t place, double points)
 {
+    auto scale = _ctx.competition.points_scale;
+    if (r.city_id != _ctx.host_city_id)
+        scale += _ctx.competition.foreign_scale;
+    points *= scale;
+
     const auto & cpl = _db.get<couple>(r.couple_id);
     for (const auto & d : {cpl.dancer_id1, cpl.dancer_id2})
     {
@@ -127,12 +139,12 @@ void bac::proceed_result(const result & r, size_t place, double stars)
             _ctx.group.id,
             d.value(),
             static_cast<int64_t>(place),
-            stars};
+            points};
         update_or_insert(b_results, br);
     }
 }
 
-void bac::update_stars(int64_t start_date, int64_t end_date)
+void bac::update_points(int64_t start_date, int64_t end_date)
 {
     const auto comp_ids = utils::ids(_ctx.competitions);
     for (const auto & comp : _ctx.competitions)
@@ -150,14 +162,14 @@ void bac::update_stars(int64_t start_date, int64_t end_date)
             for (const auto & r : all_results)
             {
                 const auto & d = _db.get<dancer>(r.dancer_id);
-                const auto & b_stars = _db.get_all<bac_stars>(
+                const auto & b_points = _db.get_all<bac_points>(
                     where(
-                        c(&bac_stars::group_id) == _ctx.group.id
-                        and c(&bac_stars::dancer_id) == d.id
-                        and c(&bac_stars::start_date) == start_date
-                        and c(&bac_stars::end_date) == end_date));
-                ds_assert(b_stars.size() <= 1);
-                bac_stars b_s = {
+                        c(&bac_points::group_id) == _ctx.group.id
+                        and c(&bac_points::dancer_id) == d.id
+                        and c(&bac_points::start_date) == start_date
+                        and c(&bac_points::end_date) == end_date));
+                ds_assert(b_points.size() <= 1);
+                bac_points b_s = {
                     0,
                     group.id,
                     d.id,
@@ -165,21 +177,21 @@ void bac::update_stars(int64_t start_date, int64_t end_date)
                     start_date,
                     end_date};
 
-                if (b_stars.empty())
+                if (b_points.empty())
                     b_s.id = _db.insert(b_s);
                 else
-                    b_s = b_stars[0];
+                    b_s = b_points[0];
 
                 const auto & results = _db.get_all<bac_result>(
                     where(
                         c(&bac_result::group_id) == _ctx.group.id
                         and c(&bac_result::dancer_id) == d.id
                         and in(&bac_result::competition_id, comp_ids)));
-                const auto stars = std::accumulate(results.begin(), results.end(), 0.0, [](double v, const bac_result & b_r)
+                const auto points = std::accumulate(results.begin(), results.end(), 0.0, [](double v, const bac_result & b_r)
                     {
-                        return v + b_r.stars;
+                        return v + b_r.points;
                     });
-                b_s.stars = stars;
+                b_s.points = points;
                 _db.update(b_s);
             }
         }

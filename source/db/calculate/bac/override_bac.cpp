@@ -226,7 +226,7 @@ void override_bac::on_add_points(const override_bac::add_points & data, int64_t 
             and c(&bac_result::competition_id) == comp.id));
     ds_assert(results.size() == 1);
     auto r = results[0];
-    r.stars += data.points;
+    r.points += data.points;
     _db.update(r);
 }
 

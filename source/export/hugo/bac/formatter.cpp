@@ -77,10 +77,10 @@ std::string formatter::url(const std::string & text, const std::string & url)
     return fmt::format("[{}]({})", text, url);
 }
 
-formatter & formatter::couples_header(bool print_stars)
+formatter & formatter::couples_header(bool print_points)
 {
-    if (print_stars)
-        _os << "| Партнёр | &nbsp;&nbsp;&nbsp; | Звёзды | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | Партнёрша | &nbsp;&nbsp;&nbsp; | Звёзды |\n";
+    if (print_points)
+        _os << "| Партнёр | &nbsp;&nbsp;&nbsp; | Баллы | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | Партнёрша | &nbsp;&nbsp;&nbsp; | Баллы |\n";
     else
         _os << "| Партнёр | &nbsp;&nbsp;&nbsp; | &nbsp; | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | Партнёрша | &nbsp;&nbsp;&nbsp; | &nbsp; |\n";
     _os << "|:--|-|:--:|-|:--|-|:--:|\n";
@@ -94,9 +94,9 @@ formatter & formatter::table_footer()
     return *this;
 }
 
-formatter & formatter::couple(const std::string & name1, double stars1, const std::string & name2, double stars2)
+formatter & formatter::couple(const std::string & name1, double points1, const std::string & name2, double points2)
 {
-    _os << fmt::format("|{}|&nbsp;|{}| |{}|&nbsp;|{}|\n", name1, stars1, name2, stars2);
+    _os << fmt::format("|{}|&nbsp;|{:.1f}| |{}|&nbsp;|{:.1f}|\n", name1, points1, name2, points2);
     return *this;
 }
 
@@ -107,20 +107,20 @@ formatter & formatter::couple(const std::string & name1, const std::string & nam
     return *this;
 }
 
-formatter & formatter::dancers_header(bool print_stars)
+formatter & formatter::dancers_header(bool print_points)
 {
-    if (print_stars)
-        _os << "| Фамилия Имя | &nbsp;&nbsp;&nbsp; | &nbsp; |\n";
+    if (print_points)
+        _os << "| Имя Фамилия | &nbsp;&nbsp;&nbsp; | Баллы |\n";
     else
-        _os << "| Фамилия Имя | &nbsp;&nbsp;&nbsp; | &nbsp; |\n";
+        _os << "| Имя Фамилия | &nbsp;&nbsp;&nbsp; | &nbsp; |\n";
     _os << "|:--|-|:--:|\n";
 
     return *this;
 }
 
-formatter & formatter::dancer(const std::string & name, double stars)
+formatter & formatter::dancer(const std::string & name, double points)
 {
-    _os << fmt::format("|{}|&nbsp;|{}|\n", name, stars);
+    _os << fmt::format("|{}|&nbsp;|{:.1f}|\n", name, points);
     return *this;
 }
 

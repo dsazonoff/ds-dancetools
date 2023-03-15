@@ -13,7 +13,9 @@ struct competition final
     int64_t start_date;
     int64_t end_date;
     std::string url;
+    std::string host_city;
     double points_scale;
+    double foreign_scale;
 };
 
 struct group final
@@ -40,6 +42,12 @@ struct dancer final
     int64_t birthday;
 };
 
+struct city final
+{
+    int64_t id;
+    std::string name;
+};
+
 struct couple final
 {
     int64_t id = {};
@@ -56,6 +64,7 @@ struct result final
     int64_t couple_id;
     int64_t place_start;
     int64_t place_end;
+    int64_t city_id;
 };
 
 struct bac_result final
@@ -65,15 +74,15 @@ struct bac_result final
     int64_t group_id;
     int64_t dancer_id;
     int64_t place;
-    double stars;
+    double points;
 };
 
-struct bac_stars final
+struct bac_points final
 {
     int64_t id;
     int64_t group_id;
     int64_t dancer_id;
-    double stars;
+    double points;
     int64_t start_date;
     int64_t end_date;
 };
@@ -83,7 +92,7 @@ struct bac_stars final
 namespace cb
 {
 using group_name = std::function<void(db::group_name)>;
-using result = std::function<void(db::competition, db::group, db::group_name, std::optional<db::dancer>, std::optional<db::dancer>, db::result)>;
+using result = std::function<void(db::competition, db::group, db::group_name, std::optional<db::dancer>, std::optional<db::dancer>, db::result, db::city)>;
 } // namespace cb
 
 } // namespace ds::db

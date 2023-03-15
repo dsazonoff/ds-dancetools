@@ -16,8 +16,9 @@ ranking::ranking(const std::shared_ptr<db> & db)
 
 cb::result ranking::callback()
 {
-    return [this](competition comp, group g, group_name gn, std::optional<dancer> d1, std::optional<dancer> d2, result r)
+    return [this](competition comp, group g, group_name gn, std::optional<dancer> d1, std::optional<dancer> d2, result r, city cc)
     {
+        add_city(cc);
         add_competition(comp);
 
         if (gn.id == 0)
@@ -47,8 +48,16 @@ cb::result ranking::callback()
             r.group_id = g.id;
         if (r.couple_id == 0)
             r.couple_id = cpl.id;
+        r.city_id = cc.id;
         add_result(r);
     };
+}
+
+void ranking::add_city(city & cc)
+{
+    const auto & cities = _db.get_all<city>(
+        where(c(&city::name) == cc.name));
+    get_or_insert(cities, cc);
 }
 
 void ranking::add_competition(competition & comp)

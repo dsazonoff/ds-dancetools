@@ -14,11 +14,11 @@ public:
     formatter & h3(const std::string & text);
     formatter & h4(const std::string & text);
     formatter & h5(const std::string & text);
-    formatter & couples_header(bool print_stars = true);
-    formatter & couple(const std::string & name1, double stars1, const std::string & name2, double stars2);
+    formatter & couples_header(bool print_points = true);
+    formatter & couple(const std::string & name1, double points1, const std::string & name2, double points2);
     formatter & couple(const std::string & name1, const std::string & name2);
-    formatter & dancers_header(bool print_stars = true);
-    formatter & dancer(const std::string & name, double stars);
+    formatter & dancers_header(bool print_points = true);
+    formatter & dancer(const std::string & name, double points);
     formatter & dancer(const std::string & name);
     formatter & table_footer();
     formatter & raw(const std::string & text);
