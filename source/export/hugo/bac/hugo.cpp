@@ -96,7 +96,7 @@ std::string hugo::get_surname_key(const std::string & name1, const std::string &
 std::string hugo::get_points_key(double points, const std::string & name1, const std::string & name2)
 {
     points = 100000.0 - points * 100.0; // Some magic for string-based sorting in map
-    std::string r =  fmt::format("{:.0f} {}", points, get_surname_key(name1, name2));
+    std::string r = fmt::format("{:.0f} {}", points, get_surname_key(name1, name2));
     return r;
 }
 
@@ -184,12 +184,11 @@ void hugo::export_full_list(const fs::path & path, int64_t start_date, int64_t e
 
 void hugo::export_competition(const fs::path & path, const std::string & url, const db::competition & comp)
 {
-    const auto extra_header =
-        fmt::format("{}\n\nГород: {}\n\nКоэффициент турнира: {:.1f}\n\nКоэффициент для иногородних участников: {:.1f}",
-            formatter::url(s_results, comp.url),
-            comp.host_city,
-            comp.points_scale,
-            comp.foreign_scale + 1.0);
+    const auto extra_header = fmt::format("{}\n\nГород: {}\n\nКоэффициент турнира: {:.1f}\n\nКоэффициент для иногородних участников: {:.1f}",
+        formatter::url(s_results, comp.url),
+        comp.host_city,
+        comp.points_scale,
+        comp.foreign_scale + 1.0);
     export_custom(
         path,
         comp.start_date,
@@ -499,10 +498,19 @@ void hugo::export_dancer(const fs::path & path, const std::string & url, const d
     f.yaml_header(dancer.name, url, "", "")
         .h2(dancer.name);
 
-    const auto & groups = _db.get_all<db::group>();
-    for (const auto & g : groups)
+    const auto & gr_names = _db.get_all<db::group_name>(
+        order_by(&db::group_name::title));
+
+    // for (const auto & g : groups)
+    for (const auto & gr_name : gr_names)
     {
-        const auto & gr_name = _db.get<db::group_name>(g.group_name_id);
+        //const auto & gr_name = _db.get<db::group_name>(g.group_name_id);
+        const auto & groups = _db.get_all<db::group>(
+            where(c(&db::group::group_name_id) == gr_name.id),
+            limit(1));
+        ds_assert(groups.size() == 1);
+        const auto & g = groups[0];
+
         f.h3(gr_name.title);
 
         f.raw("| Баллы | &nbsp;&nbsp;&nbsp; | Турнир |\n|--:|-|:--|\n");
