@@ -7,8 +7,8 @@
       "solo": true,
       "split": [
         10,
-        11,
-        7
+        12,
+        8
       ]
     },
     {
@@ -17,9 +17,6 @@
       "max_year": 2013,
       "solo": true,
       "split": [
-        7,
-        7,
-        6
       ]
     },
     {
@@ -28,8 +25,8 @@
       "max_year": 0,
       "solo": false,
       "split": [
-        5,
         6,
+        7,
         4
       ]
     },
@@ -39,17 +36,14 @@
       "max_year": 2013,
       "solo": false,
       "split": [
-        6,
-        6,
-        5
       ]
     }
   ],
   "competition": {
-    "title": "Первенство и Чемпионат РБ 2023, первый этап",
-    "start_date": "2023-03-11",
-    "end_date": "2023-03-12",
-    "url": "https://ereg.by/results/2023-03-11_148-0/index.htm",
+    "title": "M.I.N.S.K CUP 2023",
+    "start_date": "2023-03-26",
+    "end_date": "2023-03-26",
+    "url": "https://ereg.by/results/2023-03-26_149-0/index.htm",
     "host_city": "Минск",
     "points_scale": 1.0,
     "foreign_scale": 0.3

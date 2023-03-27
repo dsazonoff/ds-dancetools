@@ -14,7 +14,7 @@ ranking::ranking(const std::shared_ptr<db> & db)
 {
 }
 
-cb::result ranking::callback()
+cb::result ranking::result_callback()
 {
     return [this](competition comp, group g, group_name gn, std::optional<dancer> d1, std::optional<dancer> d2, result r, city cc)
     {
@@ -50,6 +50,26 @@ cb::result ranking::callback()
             r.couple_id = cpl.id;
         r.city_id = cc.id;
         add_result(r);
+    };
+}
+
+cb::group_split ranking::split_callback()
+{
+    return [this](competition comp, group_name gn, std::vector<bac_group_split> splits)
+    {
+        add_competition(comp);
+        const auto & names = _db.get_all<group_name>(where(c(&group_name::name) == gn.name));
+        ds_assert(names.size() == 1);
+        const auto & groups = _db.get_all<group>(where(c(&group::group_name_id) == names[0].id));
+        ds_assert(groups.size() == 1);
+        const auto & g = groups[0];
+
+        for (auto & s : splits)
+        {
+            s.competition_id = comp.id;
+            s.group_id = g.id;
+            add_split(s);
+        }
     };
 }
 
@@ -124,6 +144,11 @@ void ranking::add_result(result & r)
             and c(&result::group_id) == r.group_id
             and c(&result::couple_id) == r.couple_id));
     update_or_insert(results, r);
+}
+
+void ranking::add_split(bac_group_split & r)
+{
+    r.id = _db.insert(r);
 }
 
 

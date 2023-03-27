@@ -98,6 +98,17 @@ inline auto make_db(const std::string & path)
 
             foreign_key(&bac_points::group_id)           .references(&group::id),
             foreign_key(&bac_points::dancer_id)          .references(&dancer::id)
+            ),
+
+        make_table("bac_group_split",
+            make_column("id",               &bac_group_split::id,   primary_key().autoincrement()),
+            make_column("competition_id",   &bac_group_split::competition_id),
+            make_column("group_id",         &bac_group_split::group_id),
+            make_column("place",            &bac_group_split::place),
+            make_column("count",            &bac_group_split::count),
+
+            foreign_key(&bac_group_split::competition_id)   .references(&competition::id),
+            foreign_key(&bac_group_split::group_id)         .references(&group::id)
             )
 
     );

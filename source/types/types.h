@@ -67,6 +67,15 @@ struct result final
     int64_t city_id;
 };
 
+struct bac_group_split final
+{
+    int64_t id;
+    int64_t competition_id;
+    int64_t group_id;
+    int64_t place;
+    int64_t count;
+};
+
 struct bac_result final
 {
     int64_t id;
@@ -93,6 +102,7 @@ namespace cb
 {
 using group_name = std::function<void(db::group_name)>;
 using result = std::function<void(db::competition, db::group, db::group_name, std::optional<db::dancer>, std::optional<db::dancer>, db::result, db::city)>;
+using group_split = std::function<void(db::competition, db::group_name, std::vector<db::bac_group_split>)>;
 } // namespace cb
 
 } // namespace ds::db

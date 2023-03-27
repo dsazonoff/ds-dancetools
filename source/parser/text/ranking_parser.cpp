@@ -22,9 +22,10 @@ void ranking_parser::set_root_dir(fs::path dir)
     _root = std::move(dir);
 }
 
-void ranking_parser::set_callback(db::cb::result callback)
+void ranking_parser::set_callback(db::cb::result result_callback, db::cb::group_split split_callback)
 {
-    _result_callback = std::move(callback);
+    _result_callback = std::move(result_callback);
+    _split_callback = std::move(split_callback);
 }
 
 void ranking_parser::parse()
@@ -48,6 +49,7 @@ void ranking_parser::parse_results_dir(const fs::path & results_dir)
     _ctx.manifest = utils::read_json(manifest_path);
     _ctx.competition = parse_competition(_ctx.manifest);
     _ctx.groups = parse_groups(_ctx.manifest);
+    _ctx.group_results = parse_group_results(_ctx.manifest);
 
     for (const auto & entry : fs::directory_iterator(_ctx.working_dir))
     {
@@ -57,6 +59,13 @@ void ranking_parser::parse_results_dir(const fs::path & results_dir)
 
         parse_results_file(path);
     }
+
+    ds_assert(_split_callback);
+    for (const auto& [group_id, split] : _ctx.group_results)
+    {
+        _split_callback(_ctx.competition, db::group_name{0, group_id, {}}, split);
+    }
+
     std::cout << "\n";
 }
 
@@ -128,6 +137,36 @@ std::map<std::string, db::group> ranking_parser::parse_groups(const json::value 
         throw std::logic_error{fmt::format("Could not parse manifest: {}\nError: {}", _ctx.working_dir.generic_string(), ex.what())};
     }
 }
+
+std::map<std::string, std::vector<db::bac_group_split>> ranking_parser::parse_group_results(const json::value & manifest) const
+{
+    try
+    {
+        std::map<std::string, std::vector<db::bac_group_split>> g;
+
+        const auto & groups = manifest.at("groups").as_array();
+        for (const auto & obj : groups)
+        {
+            const std::string id_name = obj.at("id").as_string().c_str();
+            const auto & results = obj.at("split");
+
+            std::vector<db::bac_group_split> gr;
+            int64_t place = 1;
+            for (const auto & r : results.as_array())
+            {
+                gr.emplace_back(db::bac_group_split{0, 0, 0, place, r.as_int64()});
+                ++place;
+            }
+
+            g.emplace(id_name, std::move(gr));
+        }
+
+        return g;
+    }
+    catch (const std::exception & ex)
+    {
+        throw std::logic_error{fmt::format("Could not parse manifest: {}\nError: {}", _ctx.working_dir.generic_string(), ex.what())};
+    }}
 
 void ranking_parser::parse_results_file(const fs::path & path)
 {

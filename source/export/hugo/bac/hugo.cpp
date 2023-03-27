@@ -232,6 +232,24 @@ void hugo::export_custom(const fs::path & path, int64_t start_date, int64_t end_
         return ids;
     };
 
+    const auto get_pass_points = [accept_participants = _accept_participants](const std::vector<double> & all_points)
+    {
+        auto passed = 0;
+        auto last_pts = all_points[0];
+        for (const auto & pts : all_points)
+        {
+            if (passed >= accept_participants && last_pts != pts)
+                break;
+            ++passed;
+            last_pts = pts;
+        }
+        return last_pts;
+    };
+    const auto is_less = [](double lhs, double rhs)
+    {
+        return lhs < rhs - 0.00001;
+    };
+
     // Couples
     {
         f.h3(s_couples);
@@ -251,29 +269,17 @@ void hugo::export_custom(const fs::path & path, int64_t start_date, int64_t end_
             if (all_points.empty())
                 continue;
 
-            const auto pass_points = [&]()
-            {
-                auto passed = 0;
-                auto last_pts = all_points[0].points;
-                for (const auto & pts : all_points)
-                {
-                    if (passed == _accept_participants)
-                        break;
-                    if (last_pts != pts.points)
-                        ++passed;
-                    last_pts = pts.points;
-                }
-                return last_pts;
-            }();
-
             const auto & dancers_ids = dancers_ids_from_points(all_points);
             const auto & couples = _db.get_all<db::couple>(
                 where(
                     in(&db::couple::dancer_id1, dancers_ids)
                     or in(&db::couple::dancer_id2, dancers_ids)));
 
-            std::map<std::string, std::tuple<db::dancer, db::bac_points, db::dancer, db::bac_points>> couples_sorted_by_name;
-            std::map<std::string, std::tuple<db::dancer, db::bac_points, db::dancer, db::bac_points>> couples_sorted_by_points;
+            using couple_t = std::tuple<db::dancer, db::bac_points, db::dancer, db::bac_points, double>;
+            std::vector<couple_t> group_couples_all;
+            group_couples_all.reserve(couples.size());
+            std::vector<double> points_all;
+            points_all.reserve(couples.size());
             for (const auto & cpl : couples)
             {
                 if (cpl.is_solo)
@@ -300,17 +306,32 @@ void hugo::export_custom(const fs::path & path, int64_t start_date, int64_t end_
                 ds_assert(b_s2.size() == 1);
 
                 const auto points = std::min(b_s1[0].points, b_s2[0].points);
+                group_couples_all.emplace_back(d1, b_s1[0], d2, b_s2[0], points);
+                points_all.emplace_back(points);
+            }
+
+            std::sort(points_all.begin(), points_all.end(), std::greater<>());
+            const auto pass_points = get_pass_points(points_all);
+
+            std::map<std::string, couple_t> couples_sorted_by_name;
+            std::map<std::string, couple_t> couples_sorted_by_points;
+            for (const auto & it : group_couples_all)
+            {
+                const auto points = std::get<4>(it);
                 if (only_passed_dancers)
                 {
-                    if (points < pass_points)
+                    if (is_less(points, pass_points))
                         continue;
                 }
 
+                const auto & d1 = std::get<0>(it);
+                const auto & d2 = std::get<2>(it);
                 const auto name_key = get_surname_key(d1.name, d2.name);
                 const auto points_key = get_points_key(points, d1.name, d2.name);
-                const auto cpl_tuple = std::tuple{d1, b_s1[0], d2, b_s2[0]};
-                couples_sorted_by_name[name_key] = cpl_tuple;
-                couples_sorted_by_points[points_key] = cpl_tuple;
+                ds_assert(couples_sorted_by_name.find(name_key) == couples_sorted_by_name.end());
+                ds_assert(couples_sorted_by_points.find(name_key) == couples_sorted_by_points.end());
+                couples_sorted_by_name[name_key] = it;
+                couples_sorted_by_points[points_key] = it;
             }
 
             f.h4(n.title)
@@ -318,7 +339,7 @@ void hugo::export_custom(const fs::path & path, int64_t start_date, int64_t end_
 
             for (const auto & it : (sort_points ? couples_sorted_by_points : couples_sorted_by_name))
             {
-                const auto & [d1, b_s1, d2, b_s2] = it.second;
+                const auto & [d1, b_s1, d2, b_s2, points] = it.second;
                 if (print_points)
                     f.couple(d1.name, b_s1.points, d2.name, b_s2.points);
                 else
@@ -348,28 +369,17 @@ void hugo::export_custom(const fs::path & path, int64_t start_date, int64_t end_
             if (all_points.empty())
                 continue;
 
-            const auto pass_points = [&]()
-            {
-                auto passed = 0;
-                auto last_pts = all_points[0].points;
-                for (const auto & pts : all_points)
-                {
-                    if (passed == _accept_participants)
-                        break;
-                    if (last_pts != pts.points)
-                        ++passed;
-                    last_pts = pts.points;
-                }
-                return last_pts;
-            }();
-
             const auto & dancers_ids = dancers_ids_from_points(all_points);
             const auto & dancers = _db.get_all<db::dancer>(
                 where(
                     in(&db::dancer::id, dancers_ids)));
 
-            std::map<std::string, std::tuple<db::dancer, db::bac_points>> dancers_sorted_by_name;
-            std::map<std::string, std::tuple<db::dancer, db::bac_points>> dancers_sorted_by_points;
+            using dancer_t = std::tuple<db::dancer, db::bac_points, double>;
+            std::vector<dancer_t> group_dancers_all;
+            group_dancers_all.reserve(dancers.size());
+            std::vector<double> points_all;
+            points_all.reserve(dancers.size());
+
             for (const auto & d : dancers)
             {
                 const auto & b_s = _db.get_all<db::bac_points>(
@@ -380,17 +390,29 @@ void hugo::export_custom(const fs::path & path, int64_t start_date, int64_t end_
                 ds_assert(b_s.size() == 1);
 
                 const auto points = b_s[0].points;
+                group_dancers_all.emplace_back(d, b_s[0], points);
+                points_all.emplace_back(points);
+            }
+
+            std::sort(points_all.begin(), points_all.end(), std::greater<>());
+            const auto pass_points = get_pass_points(points_all);
+
+            std::map<std::string, dancer_t> dancers_sorted_by_name;
+            std::map<std::string, dancer_t> dancers_sorted_by_points;
+            for (const auto & it : group_dancers_all)
+            {
+                const auto points = std::get<2>(it);
                 if (only_passed_dancers)
                 {
-                    if (points < pass_points)
+                    if (is_less(points, pass_points))
                         continue;
                 }
 
+                const auto & d = std::get<0>(it);
                 const auto name_key = get_surname_key(d.name);
                 const auto points_key = get_points_key(points, d.name);
-                const auto d_tuple = std::tuple{d, b_s[0]};
-                dancers_sorted_by_name[name_key] = d_tuple;
-                dancers_sorted_by_points[points_key] = d_tuple;
+                dancers_sorted_by_name[name_key] = it;
+                dancers_sorted_by_points[points_key] = it;
             }
 
             f.h4(n.title)
@@ -398,12 +420,9 @@ void hugo::export_custom(const fs::path & path, int64_t start_date, int64_t end_
 
             for (const auto & it : (sort_points ? dancers_sorted_by_points : dancers_sorted_by_name))
             {
-                const auto & [d, b_s] = it.second;
+                const auto & [d, b_s, points] = it.second;
                 if (print_points)
-                {
-                    const auto points = b_s.points;
                     f.dancer(d.name, points);
-                }
                 else
                     f.dancer(d.name);
             }

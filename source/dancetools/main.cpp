@@ -38,7 +38,7 @@ int main()
         {
             parser::ranking_parser p;
             p.set_root_dir(s_results_path);
-            p.set_callback(ranking.callback());
+            p.set_callback(ranking.result_callback(), ranking.split_callback());
             p.parse();
         }
 

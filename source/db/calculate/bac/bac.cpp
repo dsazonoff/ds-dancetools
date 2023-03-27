@@ -18,7 +18,7 @@ bac::bac(const std::shared_ptr<db> & db)
 {
 }
 
-void bac::evaluate(int64_t start_date, int64_t end_date, const fs::path& override_path) // NOLINT(misc-no-recursion)
+void bac::evaluate(int64_t start_date, int64_t end_date, const fs::path & override_path) // NOLINT(misc-no-recursion)
 {
     _ctx.competitions = _db.get_all<competition>(
         where(
@@ -50,8 +50,7 @@ void bac::proceed_competition(const competition & comp)
     _ctx.competition = comp;
     _ctx.host_city_id = 0;
     const auto comp_city = _db.get_all<city>(
-        where(c(&city::name) == _ctx.competition.host_city)
-    );
+        where(c(&city::name) == _ctx.competition.host_city));
     ds_assert(comp_city.size() <= 1);
     if (comp_city.size() == 1)
         _ctx.host_city_id = comp_city[0].id;
@@ -85,7 +84,42 @@ void bac::proceed_group(const group & gr)
         throw std::logic_error{fmt::format("Invalid results: {} | {} | {}", date.str(), comp_name, gr_name)};
     }
 
-    constexpr const size_t n_places = 3;
+    const auto & splits = _db.get_all<bac_group_split>(
+        where(
+            c(&bac_group_split::competition_id) == _ctx.competition.id
+            and c(&bac_group_split::group_id) == _ctx.group.id),
+        order_by(&bac_group_split::place).asc());
+    if (splits.empty())
+    {
+        proceed_results_auto(results);
+        return;
+    }
+
+    ds_assert(splits.size() == 3);
+    proceed_results_split(results, splits);
+}
+
+void bac::proceed_results_split(const std::vector<result> & results, const std::vector<bac_group_split> & splits)
+{
+    const size_t n_places = splits.size();
+    auto result_index = 0;
+    for(const auto & s : splits)
+    {
+        const auto place = s.place;
+        for(auto i = 0; i < s.count; ++i)
+        {
+            const auto points = std::round(static_cast<double>(n_places - place + 1));
+            proceed_result(results[result_index], place, points);
+            ++result_index;
+        }
+    }
+
+    ds_assert(result_index == results.size());
+}
+
+void bac::proceed_results_auto(const std::vector<result> & results)
+{
+    const size_t n_places = 3;
     const auto n_results = results.size();
     size_t first_index = 0;
     for (size_t place = 1; place <= n_places; ++place)

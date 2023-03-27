@@ -11,7 +11,8 @@ class ranking final
 public:
     explicit ranking(const std::shared_ptr<db> & db);
 
-    cb::result callback();
+    cb::result result_callback();
+    cb::group_split split_callback();
 
 private:
     void add_city(city & c);
@@ -20,6 +21,7 @@ private:
     void add_dancer(std::optional<dancer> & d);
     void add_couple(couple & cpl);
     void add_result(result & r);
+    void add_split(bac_group_split & r);
 };
 
 
