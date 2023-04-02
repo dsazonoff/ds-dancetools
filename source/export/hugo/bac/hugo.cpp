@@ -447,7 +447,8 @@ void hugo::export_all_dancers(const fs::path & path, const std::string & url, in
     const auto & competitions = _db.get_all<db::competition>(
         where(
             c(&db::competition::start_date) >= start_date
-            and c(&db::competition::end_date) <= end_date));
+            and c(&db::competition::end_date) <= end_date),
+        order_by(&db::competition::start_date));
     const auto & comp_ids = db::utils::ids(competitions);
 
     std::map<std::string, db::dancer> sorted;
