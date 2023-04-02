@@ -152,7 +152,8 @@ void hugo::export_full_list(const fs::path & path, int64_t start_date, int64_t e
         const auto & competitions = _db.get_all<db::competition>(
             where(
                 c(&db::competition::start_date) >= start_date
-                and c(&db::competition::end_date) <= end_date));
+                and c(&db::competition::end_date) <= end_date),
+            order_by(&db::competition::start_date));
         const auto & results_dir = _output / s_results_dir;
         fs::create_directories(results_dir);
         formatter f{extra};

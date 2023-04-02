@@ -11,7 +11,8 @@ formatter::formatter(std::ostream & os)
     : _os{os}
 {
 }
-formatter & formatter::yaml_header(std::string title, std::string url, std::string date, std::string image)
+
+formatter & formatter::yaml_header(const std::string & title, const std::string & url, const std::string & date, const std::string & image)
 {
     _os << fmt::format(
         R"(---
@@ -31,15 +32,15 @@ sections:
     return *this;
 }
 
-std::string & formatter::fix_date(std::string & date)
+std::string formatter::fix_date(const std::string & date)
 {
-    if (date.empty())
-    {
-        const auto now = std::chrono::system_clock::now();
-        date = fmt::format("{:%Y-:%m-:%d}T00:00:00+00:00", now);
-    }
+    if (!date.empty())
+        return date;
 
-    return date;
+    const auto now = std::chrono::system_clock::now();
+    const auto current_date = fmt::format("{:%Y-:%m-:%d}T00:00:00+00:00", now);
+
+    return current_date;
 }
 
 formatter & formatter::h1(const std::string & text)

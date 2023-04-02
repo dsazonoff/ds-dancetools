@@ -103,10 +103,10 @@ void bac::proceed_results_split(const std::vector<result> & results, const std::
 {
     const size_t n_places = splits.size();
     auto result_index = 0;
-    for(const auto & s : splits)
+    for (const auto & s : splits)
     {
         const auto place = s.place;
-        for(auto i = 0; i < s.count; ++i)
+        for (auto i = 0; i < s.count; ++i)
         {
             const auto points = std::round(static_cast<double>(n_places - place + 1));
             proceed_result(results[result_index], place, points);

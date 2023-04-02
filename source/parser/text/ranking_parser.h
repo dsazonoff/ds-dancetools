@@ -33,7 +33,7 @@ private:
     std::map<std::string, db::group> parse_groups(const json::value & manifest) const;
     std::map<std::string, std::vector<db::bac_group_split>> parse_group_results(const json::value & manifest) const;
     void parse_results_file(const fs::path & path);
-    std::tuple<std::optional<db::dancer>, std::optional<db::dancer>, db::result, db::city> parse_line(const std::string& line) const;
+    std::tuple<std::optional<db::dancer>, std::optional<db::dancer>, db::result, db::city> parse_line(const std::string & line) const;
 
 private:
     fs::path _root = ".";

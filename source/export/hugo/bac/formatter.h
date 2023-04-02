@@ -8,7 +8,7 @@ class formatter final
 public:
     explicit formatter(std::ostream & os);
 
-    formatter & yaml_header(std::string title, std::string url, std::string date, std::string image);
+    formatter & yaml_header(const std::string & title, const std::string & url, const std::string & date, const std::string & image);
     formatter & h1(const std::string & text);
     formatter & h2(const std::string & text);
     formatter & h3(const std::string & text);
@@ -28,7 +28,7 @@ public:
     static std::string url(const std::string & text, const std::string & url);
 
 private:
-    static std::string & fix_date(std::string & date);
+    static std::string fix_date(const std::string & date);
 
 private:
     std::ostream & _os;

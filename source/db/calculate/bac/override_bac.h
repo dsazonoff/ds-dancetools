@@ -1,8 +1,8 @@
 #pragma once
 
 
-#include "types/types.h"
 #include "db/base_logic.h"
+#include "types/types.h"
 
 
 namespace ds::db
@@ -65,4 +65,4 @@ private:
     std::vector<data_t> _rules;
 };
 
-} // namespace ds::parser
+} // namespace ds::db

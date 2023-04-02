@@ -34,7 +34,7 @@ private:
     void export_full_list(const fs::path & path, int64_t start_date, int64_t end_date, const std::string & url);
     void export_competition(const fs::path & path, const std::string & url, const db::competition & comp);
     void export_all_dancers(const fs::path & path, const std::string & url, int64_t start_date, int64_t end_date);
-    void export_dancer(const fs::path & path, const std::string & url, const db::dancer & dancer, const std::vector<db::competition>& competitions, int64_t start_date, int64_t end_date);
+    void export_dancer(const fs::path & path, const std::string & url, const db::dancer & dancer, const std::vector<db::competition> & competitions, int64_t start_date, int64_t end_date);
 
 private:
     fs::path _output;

@@ -61,7 +61,7 @@ void ranking_parser::parse_results_dir(const fs::path & results_dir)
     }
 
     ds_assert(_split_callback);
-    for (const auto& [group_id, split] : _ctx.group_results)
+    for (const auto & [group_id, split] : _ctx.group_results)
     {
         _split_callback(_ctx.competition, db::group_name{0, group_id, {}}, split);
     }
@@ -166,7 +166,8 @@ std::map<std::string, std::vector<db::bac_group_split>> ranking_parser::parse_gr
     catch (const std::exception & ex)
     {
         throw std::logic_error{fmt::format("Could not parse manifest: {}\nError: {}", _ctx.working_dir.generic_string(), ex.what())};
-    }}
+    }
+}
 
 void ranking_parser::parse_results_file(const fs::path & path)
 {
@@ -254,7 +255,7 @@ std::tuple<std::optional<db::dancer>, std::optional<db::dancer>, db::result, db:
         return std::tuple(d1, d2);
     };
 
-    static const auto parse_city = [](const std::string& text)
+    static const auto parse_city = [](const std::string & text)
     {
         std::vector<std::string> words;
         boost::algorithm::split_regex(words, text, boost::regex(" / "));
