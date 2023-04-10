@@ -14,6 +14,7 @@
 namespace
 {
 constexpr const auto s_results_path = "data/input/text/2023";
+constexpr const auto s_output_path = "../sportdance-by/content/pages/db/2023";
 } // namespace
 
 
@@ -49,8 +50,10 @@ int main()
         }
 
         {
+            fs::remove_all(s_output_path);
+
             exp::hugo::hugo h{db};
-            h.set_output_dir("../sportdance-by/content/pages/db/2023");
+            h.set_output_dir(s_output_path);
             h.set_suffix("become-a-champion");
             const auto manifest_path = fs::path{s_results_path} / "hugo-2023.json";
             h.set_manifest(manifest_path);

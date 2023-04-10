@@ -1,0 +1,57 @@
+{
+  "groups": [
+    {
+      "id": "juv1-solo",
+      "min_year": 2014,
+      "max_year": 0,
+      "solo": true,
+      "split": [
+        8,
+        8,
+        7
+      ]
+    },
+    {
+      "id": "juv2-solo",
+      "min_year": 2012,
+      "max_year": 2013,
+      "solo": true,
+      "split": [
+        6,
+        2,
+        3
+      ]
+    },
+    {
+      "id": "juv1-couples",
+      "min_year": 2014,
+      "max_year": 0,
+      "solo": false,
+      "split": [
+        4,
+        2,
+        2
+      ]
+    },
+    {
+      "id": "juv2-couples",
+      "min_year": 2012,
+      "max_year": 2013,
+      "solo": false,
+      "split": [
+        1,
+        1,
+        1
+      ]
+    }
+  ],
+  "competition": {
+    "title": "Весенний Бал 2023",
+    "start_date": "2023-04-09",
+    "end_date": "2023-04-09",
+    "url": "https://ereg.by/results/2023-04-09_151-0/index.htm",
+    "host_city": "Могилёв",
+    "points_scale": 1.0,
+    "foreign_scale": 0.3
+  }
+}

@@ -43,9 +43,11 @@ void manifest_parser::parse()
             const std::string id = group.at("id").as_string().c_str();
             const std::string title = group.at("title").as_string().c_str();
 
-            db::group_name g = {0, id, title};
             if (_group_callback)
+            {
+                db::group_name g = {0, id, title};
                 _group_callback(std::move(g));
+            }
         }
     }
     catch (const std::exception & ex)

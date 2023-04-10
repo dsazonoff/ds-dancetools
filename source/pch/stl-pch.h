@@ -19,6 +19,7 @@
 #include <iomanip>
 #include <ios>
 #include <iostream>
+#include <limits>
 #include <map>
 #include <memory>
 #include <mutex>
