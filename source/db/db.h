@@ -11,6 +11,12 @@ inline auto make_db(const std::string & path)
 
     // clang-format off
     auto db = make_storage(path,
+        make_index("index_group_names", &group_name::name, &group_name::title),
+        make_index("index_groups", &group::min_year, &group::max_year, &group::is_solo),
+        make_index("index_competitions", &competition::start_date, &competition::end_date),
+        make_index("index_dancers", &dancer::name),
+        make_index("index_cities", &city::name),
+
         make_table("group_names",
             make_column("id",       &group_name::id,        primary_key().autoincrement()),
             make_column("name",     &group_name::name,      unique()),
