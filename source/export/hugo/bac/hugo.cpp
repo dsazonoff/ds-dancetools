@@ -492,7 +492,19 @@ void hugo::export_all_dancers(const fs::path & path, const std::string & url, in
         return result;
     };
 
-    f.h5(fmt::format("Всего участников: {}", sorted.size()));
+    const auto unique_couples = _db.count<db::couple>(
+        where(not is_null(&db::couple::dancer_id1) and not is_null(&db::couple::dancer_id2)));
+    const auto unique_d1 = _db.count<db::couple>(
+        where(is_null(&db::couple::dancer_id1)));
+    const auto unique_d2 = _db.count<db::couple>(
+        where(is_null(&db::couple::dancer_id2)));
+    const auto unique_solo = unique_d1 + unique_d2;
+    const auto total_exists = _db.count<db::result>();
+
+    f.raw(fmt::format("Пары: {}", unique_couples)).br(2);
+    f.raw(fmt::format("Соло участники: {}", unique_solo)).br(2);
+    f.raw(fmt::format("Всего участников: {}", sorted.size())).br(2);
+    f.raw(fmt::format("Всего выходов на паркет: {}", total_exists)).br(2);
 
     const auto dancers_dir = _output / s_dancers_dir;
     fs::create_directories(dancers_dir);
