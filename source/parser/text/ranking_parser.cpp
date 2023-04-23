@@ -243,8 +243,8 @@ std::tuple<std::optional<db::dancer>, std::optional<db::dancer>, db::result, db:
             return boost::join(v, " ");
         };
 
-        d1->name = build_name({words[0], words[1]});
-        d2->name = build_name({words[4], words[5]});
+        d1->name = build_name({words[1], words[0]});
+        d2->name = build_name({words[5], words[4]});
 
         if (d1->name.empty())
             d1 = std::nullopt;

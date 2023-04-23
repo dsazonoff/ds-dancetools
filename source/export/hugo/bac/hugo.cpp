@@ -86,7 +86,6 @@ std::string hugo::get_surname_key(const std::string & name1, const std::string &
         std::vector<std::string> tokens;
         tokens.reserve(2);
         boost::split(tokens, n, boost::is_any_of(" "));
-        std::reverse(tokens.begin(), tokens.end());
         for (const auto & token : tokens)
             ss << token;
     }
