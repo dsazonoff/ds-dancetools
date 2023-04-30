@@ -47,6 +47,8 @@ void override_bac::set_config(const fs::path & path)
                 remove_dancer data = {
                     obj.at("name").as_string().c_str(),
                     obj.at("from_group").as_string().c_str(),
+                    obj.at("start_date").as_int64(),
+                    obj.at("end_date").as_int64(),
                 };
                 _rules.emplace_back(data);
                 continue;
@@ -163,6 +165,9 @@ void override_bac::on_move(const override_bac::move_dancer & data, int64_t start
 
 void override_bac::on_remove(const override_bac::remove_dancer & data, int64_t start_date, int64_t end_date)
 {
+    if (data.start_date < start_date || data.end_date > end_date)
+        return;
+
     const auto & gn_from = _db.get_all<group_name>(
         where(c(&group_name::name) == data.from_group));
     ds_assert(gn_from.size() == 1);
@@ -173,8 +178,8 @@ void override_bac::on_remove(const override_bac::remove_dancer & data, int64_t s
 
     const auto & competitions = _db.get_all<competition>(
         where(
-            c(&competition::start_date) >= start_date
-            and c(&competition::end_date) <= end_date));
+            c(&competition::start_date) >= data.start_date
+            and c(&competition::end_date) <= data.end_date));
     const auto comp_ids = utils::ids(competitions);
 
     const auto & dancers = _db.get_all<dancer>(

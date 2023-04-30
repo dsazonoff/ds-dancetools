@@ -29,6 +29,8 @@ public:
     {
         std::string name;
         std::string from_group;
+        int64_t start_date;
+        int64_t end_date;
     };
 
     struct add_points final
