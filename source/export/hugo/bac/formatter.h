@@ -17,6 +17,7 @@ public:
     formatter & couples_header(bool print_points = true);
     formatter & couple(const std::string & name1, double points1, const std::string & name2, double points2);
     formatter & couple(const std::string & name1, const std::string & name2);
+    formatter & couple(const std::string & name1, const std::string & name2, double points);
     formatter & dancers_header(bool print_points = true);
     formatter & dancer(const std::string & name, double points);
     formatter & dancer(const std::string & name);

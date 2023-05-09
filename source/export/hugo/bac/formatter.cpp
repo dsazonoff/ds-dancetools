@@ -80,11 +80,13 @@ std::string formatter::url(const std::string & text, const std::string & url)
 
 formatter & formatter::couples_header(bool print_points)
 {
+    _os << "| Партнёр | &nbsp;&nbsp;&nbsp; | Партнёрша | &nbsp;&nbsp;&nbsp; |";
+
     if (print_points)
-        _os << "| Партнёр | &nbsp;&nbsp;&nbsp; | Баллы | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | Партнёрша | &nbsp;&nbsp;&nbsp; | Баллы |\n";
+        _os << " Баллы |\n";
     else
-        _os << "| Партнёр | &nbsp;&nbsp;&nbsp; | &nbsp; | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | Партнёрша | &nbsp;&nbsp;&nbsp; | &nbsp; |\n";
-    _os << "|:--|-|:--:|-|:--|-|:--:|\n";
+        _os << " &nbsp; |\n";
+    _os << "|:--|-|:--|-|:--:|\n";
 
     return *this;
 }
@@ -105,6 +107,12 @@ formatter & formatter::couple(const std::string & name1, const std::string & nam
 {
     _os << fmt::format("|{}|&nbsp;| | |{}|&nbsp;| |\n", name1, name2);
 
+    return *this;
+}
+
+formatter & formatter::couple(const std::string & name1, const std::string & name2, double points)
+{
+    _os << fmt::format("|{}|&nbsp;|{}|&nbsp;|{:.1f}|\n", name1, name2, points);
     return *this;
 }
 

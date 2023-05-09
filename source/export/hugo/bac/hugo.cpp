@@ -305,7 +305,7 @@ void hugo::export_custom(const fs::path & path, int64_t start_date, int64_t end_
                 ds_assert(b_s1.size() == 1);
                 ds_assert(b_s2.size() == 1);
 
-                const auto points = std::min(b_s1[0].points, b_s2[0].points);
+                const auto points = b_s1[0].points + b_s2[0].points;
                 group_couples_all.emplace_back(d1, b_s1[0], d2, b_s2[0], points);
                 points_all.emplace_back(points);
             }
@@ -341,7 +341,7 @@ void hugo::export_custom(const fs::path & path, int64_t start_date, int64_t end_
             {
                 const auto & [d1, b_s1, d2, b_s2, points] = it.second;
                 if (print_points)
-                    f.couple(d1.name, b_s1.points, d2.name, b_s2.points);
+                    f.couple(d1.name, d2.name, points);
                 else
                     f.couple(d1.name, d2.name);
             }
