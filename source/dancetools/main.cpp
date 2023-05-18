@@ -24,6 +24,8 @@ int main()
     {
         using namespace ds;
 
+        std::cout << fmt::format("Running dancetools version: {}\n", DS_VERSION);
+
         // auto db = std::make_shared<db::db>("build/db.sqlite");
         auto db = std::make_shared<db::db>(":memory:");
         db::manifest manifest{db};
