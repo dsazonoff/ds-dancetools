@@ -199,6 +199,8 @@ void override_bac::on_remove(const override_bac::remove_dancer & data, int64_t s
 
 void override_bac::on_add_points(const override_bac::add_points & data, int64_t start_date, int64_t end_date)
 {
+    (void)start_date;
+    (void)end_date;
     const auto & gn = _db.get_all<group_name>(
         where(c(&group_name::name) == data.group));
     ds_assert(gn.size() == 1);
@@ -240,10 +242,10 @@ void override_bac::on_remove(const override_bac::remove_couple & data, int64_t s
     const auto & gn_from = _db.get_all<group_name>(
         where(c(&group_name::name) == data.from_group));
     ds_assert(gn_from.size() == 1);
-    const auto & g_from = _db.get_all<group>(
-        where(c(&group::group_name_id) == gn_from[0].id));
+//    const auto & g_from = _db.get_all<group>(
+//        where(c(&group::group_name_id) == gn_from[0].id));
     ds_assert(g_from.size() == 1);
-    const auto & from = g_from[0];
+//    const auto & from = g_from[0];
 
     const auto & competitions = _db.get_all<competition>(
         where(

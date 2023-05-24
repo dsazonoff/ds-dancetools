@@ -14,7 +14,7 @@
 namespace
 {
 constexpr const auto s_results_path = "data/input/text/2023";
-constexpr const auto s_output_path = "../sportdance-by/content/pages/db/2023";
+constexpr const auto s_output_path = "../content/pages/db/2023";
 } // namespace
 
 
