@@ -38,7 +38,7 @@ std::string formatter::fix_date(const std::string & date)
         return date;
 
     const auto now = std::chrono::system_clock::now();
-    const auto current_date = fmt::format("{:%Y-:%m-:%d}T00:00:00+00:00", now);
+    auto current_date = fmt::format("{:%Y-01-01}T00:00:00+00:00", now);
 
     return current_date;
 }
