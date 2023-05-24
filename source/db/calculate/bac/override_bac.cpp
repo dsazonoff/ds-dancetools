@@ -244,7 +244,7 @@ void override_bac::on_remove(const override_bac::remove_couple & data, int64_t s
     ds_assert(gn_from.size() == 1);
 //    const auto & g_from = _db.get_all<group>(
 //        where(c(&group::group_name_id) == gn_from[0].id));
-    ds_assert(g_from.size() == 1);
+//    ds_assert(g_from.size() == 1);
 //    const auto & from = g_from[0];
 
     const auto & competitions = _db.get_all<competition>(
