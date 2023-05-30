@@ -96,6 +96,8 @@ void names_validator::validate()
 
 bool names_validator::levenstein(const std::string & l_full, const std::wstring & l_name, const std::wstring & l_surname, const std::string & r_full, const std::wstring & r_name, const std::wstring & r_surname)
 {
+    (void)l_full;
+    (void)r_full;
     const auto is_only_last_diff = [](const std::wstring & l, const std::wstring & r)
     {
         const auto diff = std::max(l.size(), r.size()) - std::min(l.size(), r.size());
@@ -128,6 +130,8 @@ bool names_validator::levenstein(const std::string & l_full, const std::wstring 
 
 bool names_validator::swapped(const std::string & l_full, const std::wstring & l_name, const std::wstring & l_surname, const std::string & r_full, const std::wstring & r_name, const std::wstring & r_surname)
 {
+    (void)l_full;
+    (void)r_full;
     const auto d1 = distance(l_name, r_surname);
     const auto d2 = distance(r_name, l_surname);
     const auto result = (d1 <= 1) && (d2 <= 1);
