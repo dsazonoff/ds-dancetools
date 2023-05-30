@@ -101,6 +101,11 @@ void bac::proceed_group(const group & gr)
 
 void bac::proceed_results_split(const std::vector<result> & results, const std::vector<bac_group_split> & splits)
 {
+    const auto throw_error = [&](){
+        const auto& gn = _db.get<group_name>(_ctx.group.group_name_id);
+        throw std::logic_error{fmt::format("Invalid places split for: {} | {}", _ctx.competition.title, gn.title)};
+    };
+
     const size_t n_places = splits.size();
     auto result_index = 0;
     for (const auto & s : splits)
@@ -109,12 +114,15 @@ void bac::proceed_results_split(const std::vector<result> & results, const std::
         for (auto i = 0; i < s.count; ++i)
         {
             const auto points = std::round(static_cast<double>(n_places - place + 1));
+            if (result_index >= results.size())
+                throw_error();
             proceed_result(results[result_index], place, points);
             ++result_index;
         }
     }
 
-    ds_assert(result_index == results.size());
+    if (result_index != results.size())
+        throw_error();
 }
 
 void bac::proceed_results_auto(const std::vector<result> & results)

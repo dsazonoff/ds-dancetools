@@ -9,6 +9,7 @@
 #include "export/hugo/bac/hugo.h"
 #include "parser/manifest/manifest_parser.h"
 #include "parser/text/ranking_parser.h"
+#include "validator/names_validator.h"
 
 
 namespace
@@ -60,6 +61,11 @@ int main()
             const auto manifest_path = fs::path{s_results_path} / "hugo-2023.json";
             h.set_manifest(manifest_path);
             h.export_all(20230000, 20240000);
+        }
+
+        {
+            validator::names_validator v{db};
+            v.validate();
         }
     }
     catch (const std::exception & ex)
