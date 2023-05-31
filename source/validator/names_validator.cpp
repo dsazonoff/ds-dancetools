@@ -76,7 +76,7 @@ void names_validator::validate()
                 for (auto check :
                     {
                         &names_validator::levenstein,
-                        //&names_validator::swapped,
+                        &names_validator::swapped,
                     })
                     is_suspicious |= std::invoke(check, this, l_full, l_name, l_surname, r_full, r_name, r_surname);
 
