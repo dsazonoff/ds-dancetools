@@ -8,7 +8,7 @@ namespace
 {
 
 template<typename T>
-size_t distance(const T & s1, const T & s2)
+size_t string_distance(const T & s1, const T & s2)
 {
     const size_t m = s1.size();
     const size_t n = s2.size();
@@ -105,12 +105,12 @@ bool names_validator::levenstein(const std::string & l_full, const std::wstring 
             return false;
         if (l[0] != r[0])
             return false;
-        const auto d = distance(l, r);
+        const auto d = string_distance(l, r);
         return d == 1 && *l.rbegin() != *r.rbegin();
     };
 
-    const auto d_name = distance(l_name, r_name);
-    const auto d_surname = distance(l_surname, r_surname);
+    const auto d_name = string_distance(l_name, r_name);
+    const auto d_surname = string_distance(l_surname, r_surname);
 
     auto result = false;
     // Skip names like Irina|Arina, Yan|Yana
@@ -132,8 +132,8 @@ bool names_validator::swapped(const std::string & l_full, const std::wstring & l
 {
     (void)l_full;
     (void)r_full;
-    const auto d1 = distance(l_name, r_surname);
-    const auto d2 = distance(r_name, l_surname);
+    const auto d1 = string_distance(l_name, r_surname);
+    const auto d2 = string_distance(r_name, l_surname);
     const auto result = (d1 <= 1) && (d2 <= 1);
 
     return result;

@@ -238,7 +238,8 @@ void hugo::export_custom(const fs::path & path, int64_t start_date, int64_t end_
         auto last_pts = all_points[0];
         for (const auto & pts : all_points)
         {
-            if (passed >= accept_participants && last_pts != pts)
+            const auto points_not_equal = std::abs(last_pts - pts) > std::numeric_limits<double>::epsilon();
+            if (passed >= accept_participants && points_not_equal)
                 break;
             ++passed;
             last_pts = pts;

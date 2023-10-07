@@ -4,6 +4,7 @@
 
 #include "types/types.h"
 
-namespace ds::db
+namespace
 {
-}
+
+} // namespace
