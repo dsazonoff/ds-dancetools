@@ -260,7 +260,8 @@ std::tuple<std::optional<db::dancer>, std::optional<db::dancer>, db::result, db:
         std::vector<std::string> words;
         boost::algorithm::split_regex(words, text, boost::regex(" / "));
         ds_assert(!words.empty());
-        const auto city_index = words.size() == 4 ? 1 : 0;  // Skip country if it's present in txt
+        const auto n_separators = std::count(text.begin(), text.end(), '/');
+        const auto city_index = static_cast<size_t>(n_separators == 3 ? 1 : 0);  // Skip country if it's present in txt
 
         db::city c = {};
         c.name = words[city_index];
