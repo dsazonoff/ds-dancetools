@@ -33,7 +33,7 @@ int main()
             for (const auto & entry : fs::directory_iterator{s_results_path, fs::directory_options::skip_permission_denied})
             {
                 if (entry.is_directory())
-                    dirs.insert(entry.path().filename());
+                    dirs.insert(entry.path().filename().string());
             }
             if (dirs.empty())
                 throw std::logic_error{fmt::format("Could not find year data directory in: {}", s_results_path)};
