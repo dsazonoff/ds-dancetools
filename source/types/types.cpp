@@ -8,3 +8,7 @@ namespace
 {
 
 } // namespace
+
+void dummy_types()
+{
+}

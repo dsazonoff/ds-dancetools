@@ -14,8 +14,8 @@
 
 namespace
 {
-constexpr const auto s_results_path = "data/input/text/2023";
-constexpr const auto s_output_path = "../content/pages/db/2023";
+constexpr const auto s_results_path = "data/input/text";
+constexpr const auto s_output_path = "../content/pages/db";
 } // namespace
 
 
@@ -27,6 +27,33 @@ int main()
 
         std::cout << fmt::format("Running dancetools version: {}\n", DS_VERSION);
 
+        const auto detect_year = []()
+        {
+            std::set<std::string> dirs;
+            for (const auto & entry : fs::directory_iterator{s_results_path, fs::directory_options::skip_permission_denied})
+            {
+                if (entry.is_directory())
+                    dirs.insert(entry.path().filename());
+            }
+            if (dirs.empty())
+                throw std::logic_error{fmt::format("Could not find year data directory in: {}", s_results_path)};
+            auto year = *dirs.rbegin();
+            if (year.size() != 4)
+                throw std::logic_error{fmt::format("Could not find year data directory in: {}", s_results_path)};
+            return year;
+        };
+
+        const auto year = detect_year();
+        int year_num = 0;
+        std::from_chars(year.data(), year.data() + year.size(), year_num);
+        if (year_num == 0)
+            throw std::logic_error{fmt::format("Could not find year data directory in: {}", s_results_path)};
+
+        const auto results_path = fs::path{s_results_path} / year;
+        const auto output_path = fs::path{s_output_path} / year;
+        const auto range_begin = (year_num + 0) * 10000;
+        const auto range_end = (year_num + 1) * 10000;
+
         // auto db = std::make_shared<db::db>("build/db.sqlite");
         auto db = std::make_shared<db::db>(":memory:");
         db::manifest manifest{db};
@@ -34,33 +61,33 @@ int main()
 
         {
             parser::manifest_parser p;
-            p.set_root_dir(s_results_path);
+            p.set_root_dir(results_path);
             p.set_group_callback(manifest.callback());
             p.parse();
         }
 
         {
             parser::ranking_parser p;
-            p.set_root_dir(s_results_path);
+            p.set_root_dir(results_path);
             p.set_callback(ranking.result_callback(), ranking.split_callback());
             p.parse();
         }
 
         {
-            const auto override_path = fs::path{s_results_path} / "override-2023.json";
+            const auto override_path = fs::path{results_path} / "override.json";
             db::bac b{db};
-            b.evaluate(20230000, 20240000, override_path);
+            b.evaluate(range_begin, range_end, override_path);
         }
 
         {
-            fs::remove_all(s_output_path);
+            fs::remove_all(output_path);
 
             exp::hugo::hugo h{db};
-            h.set_output_dir(s_output_path);
+            h.set_output_dir(output_path);
             h.set_suffix("become-a-champion");
-            const auto manifest_path = fs::path{s_results_path} / "hugo-2023.json";
+            const auto manifest_path = fs::path{results_path} / "hugo.json";
             h.set_manifest(manifest_path);
-            h.export_all(20230000, 20240000);
+            h.export_all(range_begin, range_end);
         }
 
         {

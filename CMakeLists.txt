@@ -3,7 +3,7 @@
 # Must be included before a project() call
 include(ds-cmake/cmake/vcpkg.cmake)
 
-project("ds-dancetools")
+project("ds-dancetools" LANGUAGES CXX)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
