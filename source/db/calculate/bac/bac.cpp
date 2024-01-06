@@ -189,6 +189,8 @@ void bac::proceed_result(const result & r, size_t place, double points)
 
 void bac::update_points(int64_t start_date, int64_t end_date)
 {
+    if (_ctx.competitions.empty())
+        return;
     const auto comp_ids = utils::ids(_ctx.competitions);
     for (const auto & comp : _ctx.competitions)
     {

@@ -12,10 +12,11 @@
 namespace
 {
 
-constexpr const auto s_allowed_list = "ТОП-12 участников серии гран-при \"Стань чемпионом!\"";
+constexpr const auto s_allowed_list = "ТОП-{} участников серии гран-при \"Стань чемпионом!\"";
 constexpr const auto s_full_list = "Общий рейтинг участников серии гран-при \"Стань чемпионом!\"";
 constexpr const auto s_rules_list = "Положение о соревнованиях серии гран-при \"Стань чемпионом!\"";
 constexpr const auto s_competition_list = "Результаты прошедших турниров серии гран-при \"Стань чемпионом!\"";
+constexpr const auto s_see_you = "До встречи на соревнованиях!";
 constexpr const auto s_competition_results = "Результаты турнира: ";
 constexpr const auto s_couples = "Пары";
 constexpr const auto s_solo = "Соло";
@@ -103,9 +104,6 @@ void hugo::export_all(int64_t start_date, int64_t end_date)
 {
     fs::create_directories(_output);
 
-    const auto & comp_dir = _output / (_suffix + "results");
-    fs::create_directories(comp_dir);
-
     std::stringstream extra;
     if (_export_all)
     {
@@ -131,13 +129,14 @@ void hugo::export_all(int64_t start_date, int64_t end_date)
 
 void hugo::export_passed(const fs::path & path, int64_t start_date, int64_t end_date, const std::string & extra_header)
 {
+    const auto header = fmt::format(s_allowed_list, _accept_participants);
     export_custom(
         path,
         start_date,
         end_date,
         _title,
         _root_url,
-        s_allowed_list,
+        header,
         extra_header,
         true,
         true,
@@ -210,6 +209,19 @@ void hugo::export_custom(const fs::path & path, int64_t start_date, int64_t end_
         throw std::logic_error{fmt::format("Could not write file: {}", path.generic_string())};
 
     formatter f{os};
+
+    const auto competitions_count = _db.count<db::competition>(
+        where(
+            c(&db::competition::start_date) >= start_date
+            and c(&db::competition::end_date) <= end_date));
+    const auto has_competitions = competitions_count > 0;
+    if (!has_competitions)
+    {
+        f.yaml_header(title, url, "", _banner)
+            .h3(s_see_you)
+            .br();
+        return;
+    }
 
     f.yaml_header(title, url, "", _banner)
         .h2(header)
@@ -449,6 +461,8 @@ void hugo::export_all_dancers(const fs::path & path, const std::string & url, in
             c(&db::competition::start_date) >= start_date
             and c(&db::competition::end_date) <= end_date),
         order_by(&db::competition::start_date));
+    if (competitions.empty())
+        return;
     const auto & comp_ids = db::utils::ids(competitions);
 
     std::map<std::string, db::dancer> sorted;
