@@ -546,7 +546,7 @@ void hugo::export_dancer(const fs::path & path, const std::string & url, const d
         .h2(dancer.name);
 
     const auto & gr_names = _db.get_all<db::group_name>(
-        order_by(&db::group_name::title));
+        order_by(&db::group_name::id));
 
     // for (const auto & g : groups)
     for (const auto & gr_name : gr_names)
@@ -557,6 +557,14 @@ void hugo::export_dancer(const fs::path & path, const std::string & url, const d
             limit(1));
         ds_assert(groups.size() == 1);
         const auto & g = groups[0];
+
+        const auto skip = _db.count<db::bac_result>(
+            where(
+                c(&db::bac_result::group_id) == g.id
+                and c(&db::bac_result::dancer_id) == dancer.id)
+            ) == 0;
+        if (skip)
+            continue;
 
         f.h3(gr_name.title);
 
