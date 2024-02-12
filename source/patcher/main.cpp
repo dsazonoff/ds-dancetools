@@ -15,6 +15,14 @@ std::vector<data> parse(std::istream & is)
 {
     std::vector<data> out;
 
+    const auto swap_words = [](std::string& s)
+    {
+        std::vector<std::string> tokens;
+        boost::split(tokens, s, boost::is_any_of(" "));
+        assert(tokens.size() == 2);
+        s = fmt::format("{} {}", tokens[1], tokens[0]);
+    };
+
     data d = {};
     for (std::string line; !!std::getline(is, line);)
     {
@@ -34,6 +42,7 @@ std::vector<data> parse(std::istream & is)
             }
             d.number = boost::lexical_cast<int>(tokens[1]);
             d.n1 = tokens[3];
+            swap_words(d.n1);
             {
                 std::vector<std::string> locations;
                 boost::algorithm::split_regex(locations, tokens[6], boost::regex(" / "));
@@ -45,6 +54,7 @@ std::vector<data> parse(std::istream & is)
         if (tokens.size() == 8)
         {
             d.n2 = tokens[3];
+            swap_words(d.n2);
             out.push_back(std::move(d));
             d = {};
             continue;

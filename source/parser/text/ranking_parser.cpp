@@ -261,7 +261,23 @@ std::tuple<std::optional<db::dancer>, std::optional<db::dancer>, db::result, db:
         boost::algorithm::split_regex(words, text, boost::regex(" / "));
         ds_assert(!words.empty());
         const auto n_separators = std::count(text.begin(), text.end(), '/');
-        const auto city_index = static_cast<size_t>(n_separators == 3 ? 1 : 0);  // Skip country if it's present in txt
+        const auto city_index = [&]()
+        {
+            switch (n_separators)
+            {
+            case 0:
+                return 0; // city
+            case 1:
+                return 1; // country / city
+            case 2:
+                return 0; // city / club / coaches
+            case 3:
+                return 1; // country / city / club / coaches
+            default:
+                break;
+            }
+            throw std::logic_error{"country/city/club/coach"};
+        }();
 
         db::city c = {};
         c.name = words[city_index];
