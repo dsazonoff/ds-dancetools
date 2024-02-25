@@ -108,6 +108,26 @@ bool names_validator::levenstein(const std::string & l_full, const std::wstring 
         const auto d = string_distance(l, r);
         return d == 1 && *l.rbegin() != *r.rbegin();
     };
+    // Check for N different chars if they are in the middle and not going one by one, like Ivanov|Ivonav
+    const auto is_mid_diff = [](const std::wstring & l, const std::wstring & r, size_t n)
+    {
+        if (l.size() != r.size())
+            return false;
+        if (l[0] != r[0] || l[l.size()] != r[r.size()])
+            return false;
+        size_t diff_count = 0;
+        size_t last_diff = std::string::npos;
+        for (size_t i = 1u; i < l.size() - 1; ++i)
+        {
+            if (l[i] == r[i])
+                continue;
+            ++diff_count;
+            if (last_diff == i - 1)
+                return false;
+            last_diff = i;
+        }
+        return diff_count > 0 && diff_count <= n;
+    };
 
     const auto d_name = string_distance(l_name, r_name);
     const auto d_surname = string_distance(l_surname, r_surname);
@@ -118,10 +138,12 @@ bool names_validator::levenstein(const std::string & l_full, const std::wstring 
     {
         const auto only_first = (l_name.length() == r_name.length()) && (l_name[0] != r_name[0]);
         const auto only_last = is_only_last_diff(l_name, r_name);
-        result |= !(only_first || only_last) && d_surname <= 1;
+        result = result || (!(only_first || only_last) && d_surname <= 1);
     }
-    result |= (d_surname == 1) && !is_only_last_diff(l_surname, r_surname) && d_name <= 1;
+    result = result || ((d_surname == 1) && !is_only_last_diff(l_surname, r_surname) && d_name <= 1);
+    result = result || (d_name == 0 && is_mid_diff(l_surname, r_surname, 2));
 
+    // This if is used only for the breakpoints
     if (result)
         return true;
 
