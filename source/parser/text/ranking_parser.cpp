@@ -261,7 +261,7 @@ std::tuple<std::optional<db::dancer>, std::optional<db::dancer>, db::result, db:
         boost::algorithm::split_regex(words, text, boost::regex(" / "));
         ds_assert(!words.empty());
         const auto n_separators = std::count(text.begin(), text.end(), '/');
-        const auto city_index = [&]()
+        const auto city_index = [&]() -> size_t
         {
             switch (n_separators)
             {
