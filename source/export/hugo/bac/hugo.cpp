@@ -27,6 +27,16 @@ constexpr const auto s_dancer_list_suffix = "-dancer-list";
 constexpr const auto s_results_dir = "results";
 constexpr const auto s_dancers_dir = "dancers";
 
+struct lexicographical_compare
+{
+    bool operator()(const std::string & lhs, const std::string & rhs) const
+    {
+        std::locale loc;
+        auto comp = boost::locale::comparator<char, boost::locale::collator_base::secondary>(loc);
+        return comp(lhs, rhs);
+    }
+};
+
 } // namespace
 
 
@@ -77,7 +87,7 @@ void hugo::set_manifest(const fs::path & path)
     }
 }
 
-std::string hugo::get_surname_key(const std::string & name1, const std::string & name2)
+std::string hugo::get_surname_key(const std::string & name1, const std::string & name2, const std::string & sep)
 {
     std::stringstream ss;
     for (const auto & n : {name1, name2})
@@ -88,9 +98,10 @@ std::string hugo::get_surname_key(const std::string & name1, const std::string &
         tokens.reserve(2);
         boost::split(tokens, n, boost::is_any_of(" "));
         for (const auto & token : tokens)
-            ss << token;
+            ss << token << sep;
     }
-    return ss.str();
+    auto result = boost::locale::to_lower(ss.str());
+    return result;
 }
 
 std::string hugo::get_points_key(double points, const std::string & name1, const std::string & name2)
@@ -326,8 +337,8 @@ void hugo::export_custom(const fs::path & path, int64_t start_date, int64_t end_
             std::sort(points_all.begin(), points_all.end(), std::greater<>());
             const auto pass_points = get_pass_points(points_all);
 
-            std::map<std::string, couple_t> couples_sorted_by_name;
-            std::map<std::string, couple_t> couples_sorted_by_points;
+            std::map<std::string, couple_t, lexicographical_compare> couples_sorted_by_name;
+            std::map<std::string, couple_t, lexicographical_compare> couples_sorted_by_points;
             for (const auto & it : group_couples_all)
             {
                 const auto points = std::get<4>(it);
@@ -410,8 +421,8 @@ void hugo::export_custom(const fs::path & path, int64_t start_date, int64_t end_
             std::sort(points_all.begin(), points_all.end(), std::greater<>());
             const auto pass_points = get_pass_points(points_all);
 
-            std::map<std::string, dancer_t> dancers_sorted_by_name;
-            std::map<std::string, dancer_t> dancers_sorted_by_points;
+            std::map<std::string, dancer_t, lexicographical_compare> dancers_sorted_by_name;
+            std::map<std::string, dancer_t, lexicographical_compare> dancers_sorted_by_points;
             for (const auto & it : group_dancers_all)
             {
                 const auto points = std::get<2>(it);
@@ -465,7 +476,7 @@ void hugo::export_all_dancers(const fs::path & path, const std::string & url, in
         return;
     const auto & comp_ids = db::utils::ids(competitions);
 
-    std::map<std::string, db::dancer> sorted;
+    std::map<std::string, db::dancer, lexicographical_compare> sorted;
     const auto & dancers = _db.get_all<db::dancer>();
     for (const auto & d : dancers)
     {
@@ -489,7 +500,8 @@ void hugo::export_all_dancers(const fs::path & path, const std::string & url, in
                 continue;
         }
 
-        sorted[get_surname_key(d.name)] = d;
+        static const std::string sep = "_";
+        sorted[get_surname_key(d.name, {}, sep)] = d;
     }
 
     static const auto hash_dancer = [](const db::dancer & dancer)
@@ -559,10 +571,10 @@ void hugo::export_dancer(const fs::path & path, const std::string & url, const d
         const auto & g = groups[0];
 
         const auto skip = _db.count<db::bac_result>(
-            where(
-                c(&db::bac_result::group_id) == g.id
-                and c(&db::bac_result::dancer_id) == dancer.id)
-            ) == 0;
+                              where(
+                                  c(&db::bac_result::group_id) == g.id
+                                  and c(&db::bac_result::dancer_id) == dancer.id))
+            == 0;
         if (skip)
             continue;
 

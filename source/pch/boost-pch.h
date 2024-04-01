@@ -8,6 +8,7 @@
 #include <boost/format.hpp>
 #include <boost/json.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/locale.hpp>
 #include <boost/program_options.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>

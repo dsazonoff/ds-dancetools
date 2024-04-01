@@ -51,7 +51,7 @@ private:
     std::set<std::string> _couple_groups;
 
 private:
-    static std::string get_surname_key(const std::string & name1, const std::string & name2 = {});
+    static std::string get_surname_key(const std::string & name1, const std::string & name2 = {}, const std::string& sep = {});
     static std::string get_points_key(double points, const std::string & name1, const std::string & name2 = {});
 };
 

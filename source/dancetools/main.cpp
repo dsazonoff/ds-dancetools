@@ -27,6 +27,10 @@ int main()
 
         std::cout << fmt::format("Running dancetools version: {}\n", DS_VERSION);
 
+        const boost::locale::generator generator;
+        const std::locale loc = generator("ru_RU.UTF-8");
+        std::locale::global(loc);
+
         const auto detect_year = []()
         {
             std::set<std::string> dirs;
