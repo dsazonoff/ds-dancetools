@@ -77,6 +77,7 @@ void names_validator::validate()
                     {
                         &names_validator::levenstein,
                         &names_validator::swapped,
+                        &names_validator::name_check_01,
                     })
                     is_suspicious |= std::invoke(check, this, l_full, l_name, l_surname, r_full, r_name, r_surname);
 
@@ -89,8 +90,8 @@ void names_validator::validate()
     if (!err.empty())
     {
         std::cout << "Potential errors in names:\n";
-        for(const auto& n : err)
-            std::cout << fmt::format("  -- {}\n", n );
+        for (const auto & n : err)
+            std::cout << fmt::format("  -- {}\n", n);
     }
 }
 
@@ -159,6 +160,28 @@ bool names_validator::swapped(const std::string & l_full, const std::wstring & l
     const auto result = (d1 <= 1) && (d2 <= 1);
 
     return result;
+}
+
+bool names_validator::name_check_01(const std::string & l_full, const std::wstring & l_name, const std::wstring & l_surname, const std::string & r_full, const std::wstring & r_name, const std::wstring & r_surname)
+{
+    // Check if surname is equal but names are similar like Darina | Darianna
+    // Skip names that are started from different letters
+    if (l_surname != r_surname)
+        return false;
+    if (l_name.size() < 3 || r_name.size() < 3)
+        return false;
+    if (l_name[0] != r_name[0] || l_name[1] != r_name[1] || l_name[2] != r_name[2])
+        return false;
+
+    (void)l_full;
+    (void)r_full;
+    (void)l_name;
+    (void)r_name;
+    const auto distance = string_distance(l_name, r_name);
+    if (distance < 3)
+        return true;
+
+    return false;
 }
 
 } // namespace ds::validator

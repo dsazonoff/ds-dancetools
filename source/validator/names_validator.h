@@ -18,6 +18,7 @@ public:
 private:
     bool levenstein(const std::string& l_full, const std::wstring& l_name, const std::wstring& l_surname, const std::string& r_full, const std::wstring& r_name, const std::wstring& r_surname);
     bool swapped(const std::string& l_full, const std::wstring& l_name, const std::wstring& l_surname, const std::string& r_full, const std::wstring& r_name, const std::wstring& r_surname);
+    bool name_check_01(const std::string& l_full, const std::wstring& l_name, const std::wstring& l_surname, const std::string& r_full, const std::wstring& r_name, const std::wstring& r_surname);
 
     std::map<std::string, std::tuple<std::wstring, std::wstring>> _names;
 };
