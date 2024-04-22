@@ -79,7 +79,11 @@ void names_validator::validate()
                         &names_validator::swapped,
                         &names_validator::name_check_01,
                     })
+                {
                     is_suspicious |= std::invoke(check, this, l_full, l_name, l_surname, r_full, r_name, r_surname);
+                    if (is_suspicious)
+                        break;
+                }
 
                 if (is_suspicious)
                 {
@@ -110,6 +114,8 @@ bool names_validator::levenstein(const std::string & l_full, const std::wstring 
         return d == 1 && *l.rbegin() != *r.rbegin();
     };
     // Check for N different chars if they are in the middle and not going one by one, like Ivanov|Ivonav
+    // But skip Sanek|Sinuk - diff should be less than length / 2
+    // TODO: need to rethink the logic
     const auto is_mid_diff = [](const std::wstring & l, const std::wstring & r, size_t n)
     {
         if (l.size() != r.size())
@@ -127,7 +133,7 @@ bool names_validator::levenstein(const std::string & l_full, const std::wstring 
                 return false;
             last_diff = i;
         }
-        return diff_count > 0 && diff_count <= n;
+        return diff_count > 0 && diff_count <= n && diff_count < l.size() / 2;
     };
 
     const auto d_name = string_distance(l_name, r_name);
