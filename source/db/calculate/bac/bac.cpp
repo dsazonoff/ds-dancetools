@@ -116,12 +116,18 @@ void bac::proceed_results_split(const std::vector<result> & results, const std::
         {
             const auto points = std::round(static_cast<double>(n_places - place + 1));
             if (result_index >= results.size())
-                throw_error();
+                break;
             proceed_result(results[result_index], place, points);
             ++result_index;
         }
     }
 
+    const auto expected_participants = std::accumulate(splits.begin(), splits.end(), 0, [](int n, const auto& split)
+        {
+            return split.count + n;
+        });
+    if (expected_participants != std::ssize(results))
+        throw_error();
     if (result_index != results.size())
         throw_error();
 }
