@@ -17,6 +17,7 @@ set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 set(Boost_USE_STATIC_LIBS ON)
 set(Boost_NO_WARN_NEW_VERSIONS TRUE)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
+set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
 
 # Load project
 include(ds-cmake/cmake/core.cmake)
