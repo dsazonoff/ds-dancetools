@@ -41,10 +41,10 @@ void manifest_parser::parse()
         for (const auto & group : groups)
         {
             const std::string id = group.at("id").as_string().c_str();
-            const std::string title = group.at("title").as_string().c_str();
 
             if (_group_callback)
             {
+                const std::string title = group.at("title").as_string().c_str();
                 db::group_name g = {0, id, title};
                 _group_callback(std::move(g));
             }

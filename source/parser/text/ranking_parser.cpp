@@ -130,7 +130,7 @@ std::map<std::string, db::group> ranking_parser::parse_groups(const json::value 
             const auto min_year = obj.at("min_year").as_int64();
             const auto max_year = obj.at("max_year").as_int64();
             const auto is_solo = obj.at("solo").as_bool();
-            g.emplace(id_name, db::group{0, 0, min_year, max_year, is_solo});
+            g.try_emplace(id_name, db::group{0, 0, min_year, max_year, is_solo});
         }
 
         return g;
@@ -161,7 +161,7 @@ std::map<std::string, std::vector<db::bac_group_split>> ranking_parser::parse_gr
                 ++place;
             }
 
-            g.emplace(id_name, std::move(gr));
+            g.try_emplace(id_name, std::move(gr));
         }
 
         return g;

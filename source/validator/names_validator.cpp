@@ -54,7 +54,7 @@ names_validator::names_validator(const std::shared_ptr<db::db> & db)
         words.reserve(2);
         boost::split(words, d.name, boost::is_any_of(" "));
         assert(words.size() == 2);
-        _names.emplace(d.name, std::make_tuple(conv.from_bytes(words[0]), conv.from_bytes(words[1])));
+        _names.try_emplace(d.name, std::make_tuple(conv.from_bytes(words[0]), conv.from_bytes(words[1])));
     }
 }
 

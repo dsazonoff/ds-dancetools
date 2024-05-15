@@ -12,27 +12,27 @@
 namespace
 {
 
-constexpr const auto s_allowed_list = "ТОП-{} участников серии гран-при \"Стань чемпионом!\"";
-constexpr const auto s_full_list = "Общий рейтинг участников серии гран-при \"Стань чемпионом!\"";
-constexpr const auto s_rules_list = "Положение о соревнованиях серии гран-при \"Стань чемпионом!\"";
-constexpr const auto s_competition_list = "Результаты прошедших турниров серии гран-при \"Стань чемпионом!\"";
-constexpr const auto s_see_you = "До встречи на соревнованиях!";
-constexpr const auto s_competition_results = "Результаты турнира: ";
-constexpr const auto s_couples = "Пары";
-constexpr const auto s_solo = "Соло";
-constexpr const auto s_results = "Результаты";
-constexpr const auto s_details = "Детализация";
-constexpr const auto s_full_list_suffix = "-full-list";
-constexpr const auto s_dancer_list_suffix = "-dancer-list";
-constexpr const auto s_results_dir = "results";
-constexpr const auto s_dancers_dir = "dancers";
+constexpr auto s_full_list = "Список участников серии гран-при \"Стань чемпионом!\"";
+constexpr auto s_ranking_list = "Рейтинг участников и детализация турниров серии гран-при \"Стань чемпионом!\"";
+constexpr auto s_rules_list = "Положение о соревнованиях серии гран-при \"Стань чемпионом!\"";
+constexpr auto s_competition_list = "Результаты прошедших турниров серии гран-при \"Стань чемпионом!\"";
+constexpr auto s_see_you = "До встречи на соревнованиях!";
+constexpr auto s_competition_results = "Результаты турнира: ";
+constexpr auto s_couples = "Пары";
+constexpr auto s_solo = "Соло";
+constexpr auto s_results = "Результаты";
+constexpr auto s_details = "Детализация";
+constexpr auto s_ranking_suffix = "-ranking";
+constexpr auto s_dancer_list_suffix = "-dancer-list";
+constexpr auto s_results_dir = "results";
+constexpr auto s_dancers_dir = "dancers";
 
 struct lexicographical_compare
 {
     bool operator()(const std::string & lhs, const std::string & rhs) const
     {
-        std::locale loc;
-        auto comp = boost::locale::comparator<char, boost::locale::collator_base::secondary>(loc);
+        static const std::locale loc;
+        static const auto comp = boost::locale::comparator<char, boost::locale::collator_base::secondary>(loc);
         return comp(lhs, rhs);
     }
 };
@@ -69,7 +69,6 @@ void hugo::set_manifest(const fs::path & path)
         const auto & json = utils::read_json(path);
         const auto & cfg = json.at("config");
 
-        _accept_participants = cfg.at("accept_couples").as_int64();
         _title = cfg.at("title").as_string().c_str();
         _root_url = cfg.at("url").as_string().c_str();
         _banner = cfg.at("banner").as_string().c_str();
@@ -118,12 +117,12 @@ void hugo::export_all(int64_t start_date, int64_t end_date)
     std::stringstream extra;
     if (_export_all)
     {
-        const auto & all_url = fmt::format("{}/{}{}", _root_url, _suffix, s_full_list_suffix);
-        const auto & all_path = _output / fmt::format("{}{}.md", _suffix, s_full_list_suffix);
-        export_full_list(all_path, start_date, end_date, all_url);
+        const auto & all_url = fmt::format("{}/{}{}", _root_url, _suffix, s_ranking_suffix);
+        const auto & all_path = _output / fmt::format("{}{}.md", _suffix, s_ranking_suffix);
+        export_ranking(all_path, start_date, end_date, all_url);
 
         formatter f{extra};
-        f.h4(formatter::url(s_full_list, all_url));
+        f.h4(formatter::url(s_ranking_list, all_url));
     }
     if (_export_details)
     {
@@ -135,12 +134,12 @@ void hugo::export_all(int64_t start_date, int64_t end_date)
     }
 
     const auto & passed_path = _output / (_suffix + ".md");
-    export_passed(passed_path, start_date, end_date, extra.str());
+    export_full_list(passed_path, start_date, end_date, extra.str());
 }
 
-void hugo::export_passed(const fs::path & path, int64_t start_date, int64_t end_date, const std::string & extra_header)
+void hugo::export_full_list(const fs::path & path, int64_t start_date, int64_t end_date, const std::string & extra_header)
 {
-    const auto header = fmt::format(s_allowed_list, _accept_participants);
+    const auto header = fmt::format(s_full_list);
     export_custom(
         path,
         start_date,
@@ -150,11 +149,10 @@ void hugo::export_passed(const fs::path & path, int64_t start_date, int64_t end_
         header,
         extra_header,
         true,
-        true,
-        true);
+        false);
 }
 
-void hugo::export_full_list(const fs::path & path, int64_t start_date, int64_t end_date, const std::string & url)
+void hugo::export_ranking(const fs::path & path, int64_t start_date, int64_t end_date, const std::string & url)
 {
     std::stringstream extra;
     {
@@ -185,11 +183,10 @@ void hugo::export_full_list(const fs::path & path, int64_t start_date, int64_t e
         end_date,
         _title,
         url,
-        s_full_list,
+        s_ranking_list,
         extra.str(),
-        false,
         true,
-        false);
+        true);
 }
 
 void hugo::export_competition(const fs::path & path, const std::string & url, const db::competition & comp)
@@ -207,12 +204,11 @@ void hugo::export_competition(const fs::path & path, const std::string & url, co
         url,
         fmt::format("{}{}", s_competition_results, comp.title),
         extra_header,
-        false,
         true,
-        false);
+        true);
 }
 
-void hugo::export_custom(const fs::path & path, int64_t start_date, int64_t end_date, const std::string & title, const std::string & url, const std::string & header, const std::string & extra_header, bool only_passed_dancers, bool print_points, bool sort_points)
+void hugo::export_custom(const fs::path & path, int64_t start_date, int64_t end_date, const std::string & title, const std::string & url, const std::string & header, const std::string & extra_header, bool print_points, bool sort_points)
 {
     std::cout << fmt::format("Exporting list of couples: {}\n", path.generic_string());
     std::ofstream os{path};
@@ -255,24 +251,10 @@ void hugo::export_custom(const fs::path & path, int64_t start_date, int64_t end_
         return ids;
     };
 
-    const auto get_pass_points = [accept_participants = _accept_participants](const std::vector<double> & all_points)
-    {
-        auto passed = 0;
-        auto last_pts = all_points[0];
-        for (const auto & pts : all_points)
-        {
-            const auto points_not_equal = std::abs(last_pts - pts) > std::numeric_limits<double>::epsilon();
-            if (passed >= accept_participants && points_not_equal)
-                break;
-            ++passed;
-            last_pts = pts;
-        }
-        return last_pts;
-    };
-    const auto is_less = [](double lhs, double rhs)
-    {
-        return lhs < rhs - 0.00001;
-    };
+//    const auto is_less = [](double lhs, double rhs)
+//    {
+//        return lhs < rhs - 0.00001;
+//    };
 
     // Couples
     {
@@ -335,19 +317,12 @@ void hugo::export_custom(const fs::path & path, int64_t start_date, int64_t end_
             }
 
             std::sort(points_all.begin(), points_all.end(), std::greater<>());
-            const auto pass_points = get_pass_points(points_all);
 
             std::map<std::string, couple_t, lexicographical_compare> couples_sorted_by_name;
             std::map<std::string, couple_t, lexicographical_compare> couples_sorted_by_points;
             for (const auto & it : group_couples_all)
             {
                 const auto points = std::get<4>(it);
-                if (only_passed_dancers)
-                {
-                    if (is_less(points, pass_points))
-                        continue;
-                }
-
                 const auto & d1 = std::get<0>(it);
                 const auto & d2 = std::get<2>(it);
                 const auto name_key = get_surname_key(d1.name, d2.name);
@@ -419,19 +394,12 @@ void hugo::export_custom(const fs::path & path, int64_t start_date, int64_t end_
             }
 
             std::sort(points_all.begin(), points_all.end(), std::greater<>());
-            const auto pass_points = get_pass_points(points_all);
 
             std::map<std::string, dancer_t, lexicographical_compare> dancers_sorted_by_name;
             std::map<std::string, dancer_t, lexicographical_compare> dancers_sorted_by_points;
             for (const auto & it : group_dancers_all)
             {
                 const auto points = std::get<2>(it);
-                if (only_passed_dancers)
-                {
-                    if (is_less(points, pass_points))
-                        continue;
-                }
-
                 const auto & d = std::get<0>(it);
                 const auto name_key = get_surname_key(d.name);
                 const auto points_key = get_points_key(points, d.name);

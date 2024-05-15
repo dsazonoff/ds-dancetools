@@ -27,11 +27,10 @@ private:
         const std::string & url,
         const std::string & header,
         const std::string & extra_header,
-        bool only_passed_dancers,
         bool print_points,
         bool sort_points);
-    void export_passed(const fs::path & path, int64_t start_date, int64_t end_date, const std::string & extra_header);
-    void export_full_list(const fs::path & path, int64_t start_date, int64_t end_date, const std::string & url);
+    void export_full_list(const fs::path & path, int64_t start_date, int64_t end_date, const std::string & extra_header);
+    void export_ranking(const fs::path & path, int64_t start_date, int64_t end_date, const std::string & url);
     void export_competition(const fs::path & path, const std::string & url, const db::competition & comp);
     void export_all_dancers(const fs::path & path, const std::string & url, int64_t start_date, int64_t end_date);
     void export_dancer(const fs::path & path, const std::string & url, const db::dancer & dancer, const std::vector<db::competition> & competitions, int64_t start_date, int64_t end_date);
@@ -40,7 +39,6 @@ private:
     fs::path _output;
     std::string _suffix;
 
-    int64_t _accept_participants = 0;
     std::string _title;
     std::string _root_url;
     std::string _banner;
