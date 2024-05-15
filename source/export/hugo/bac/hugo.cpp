@@ -31,8 +31,8 @@ struct lexicographical_compare
 {
     bool operator()(const std::string & lhs, const std::string & rhs) const
     {
-        static const std::locale loc;
-        static const auto comp = boost::locale::comparator<char, boost::locale::collator_base::secondary>(loc);
+        const std::locale loc;
+        const auto comp = boost::locale::comparator<char, boost::locale::collator_base::secondary>(loc);
         return comp(lhs, rhs);
     }
 };
