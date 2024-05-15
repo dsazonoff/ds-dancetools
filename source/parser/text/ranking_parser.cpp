@@ -106,6 +106,9 @@ db::competition ranking_parser::parse_competition(const json::value & manifest) 
         c.points_scale = points_scale;
         c.foreign_scale = foreign_scale;
 
+        if (c.start_date > c.end_date)
+            throw std::logic_error{fmt::format("start_date should be lower than end_date")};
+
         return c;
     }
     catch (const std::exception & ex)

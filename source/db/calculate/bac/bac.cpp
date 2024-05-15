@@ -29,13 +29,7 @@ void bac::evaluate(int64_t start_date, int64_t end_date, const fs::path & overri
     for (const auto & comp : _ctx.competitions)
         proceed_competition(comp);
 
-    override_bac overrider{_db_ptr};
-    overrider.set_config(override_path);
-    overrider.apply(start_date, end_date);
-
-    update_points(start_date, end_date);
-
-    // Evaluate each competition
+    // Evaluate each competition as a range
     for (const auto & comp : _ctx.competitions)
     {
         if (start_date == comp.start_date && end_date == comp.end_date)
@@ -43,6 +37,13 @@ void bac::evaluate(int64_t start_date, int64_t end_date, const fs::path & overri
         bac single_comp{_db_ptr};
         single_comp.evaluate(comp.start_date, comp.end_date, override_path);
     }
+
+    // Evaluate all between start and end dates
+    override_bac overrider{_db_ptr};
+    overrider.set_config(override_path);
+    overrider.apply(start_date, end_date);
+
+    update_points(start_date, end_date);
 }
 
 void bac::proceed_competition(const competition & comp)
