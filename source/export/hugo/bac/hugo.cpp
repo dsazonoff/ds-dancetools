@@ -422,6 +422,8 @@ void hugo::export_custom(const fs::path & path, int64_t start_date, int64_t end_
             f.table_footer();
         }
     }
+
+    f.timestamp();
 }
 
 void hugo::export_all_dancers(const fs::path & path, const std::string & url, int64_t start_date, int64_t end_date)
