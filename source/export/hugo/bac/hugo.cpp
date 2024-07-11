@@ -513,6 +513,8 @@ void hugo::export_all_dancers(const fs::path & path, const std::string & url, in
         f.list(formatter::url(d.name, dancer_url));
         export_dancer(dancer_path, dancer_url, d, competitions, start_date, end_date);
     }
+
+    f.timestamp();
 }
 
 void hugo::export_dancer(const fs::path & path, const std::string & url, const db::dancer & dancer, const std::vector<db::competition> & competitions, int64_t start_date, int64_t end_date)

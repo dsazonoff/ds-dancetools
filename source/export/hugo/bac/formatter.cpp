@@ -158,5 +158,20 @@ formatter & formatter::list(const std::string & text)
     return *this;
 }
 
+formatter & formatter::timestamp()
+{
+    static const auto now = std::chrono::system_clock::now();
+    const auto now_time_t = std::chrono::system_clock::to_time_t(now);
+    const auto utc_tm = std::gmtime(&now_time_t);
+    const std::time_t utc_time_t = std::mktime(utc_tm);
+    const auto utc_time_point = std::chrono::system_clock::from_time_t(utc_time_t);
+
+    const auto current_date = fmt::format("Compiled at: {:%d-%m-%Y %H:%M} GMT", utc_time_point);
+    br(2);
+    _os << current_date;
+
+    return *this;
+}
+
 
 } // namespace ds::exp::hugo

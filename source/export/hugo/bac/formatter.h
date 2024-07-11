@@ -25,6 +25,7 @@ public:
     formatter & raw(const std::string & text);
     formatter & br(size_t count = 1);
     formatter & list(const std::string & text);
+    formatter & timestamp();
 
     static std::string url(const std::string & text, const std::string & url);
 
