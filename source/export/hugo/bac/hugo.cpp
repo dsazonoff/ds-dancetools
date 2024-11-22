@@ -251,10 +251,10 @@ void hugo::export_custom(const fs::path & path, int64_t start_date, int64_t end_
         return ids;
     };
 
-//    const auto is_less = [](double lhs, double rhs)
-//    {
-//        return lhs < rhs - 0.00001;
-//    };
+    //    const auto is_less = [](double lhs, double rhs)
+    //    {
+    //        return lhs < rhs - 0.00001;
+    //    };
 
     // Couples
     {
@@ -316,7 +316,7 @@ void hugo::export_custom(const fs::path & path, int64_t start_date, int64_t end_
                 points_all.emplace_back(points);
             }
 
-            std::sort(points_all.begin(), points_all.end(), std::greater<>());
+            std::ranges::sort(points_all, std::greater<>());
 
             std::map<std::string, couple_t, lexicographical_compare> couples_sorted_by_name;
             std::map<std::string, couple_t, lexicographical_compare> couples_sorted_by_points;
@@ -327,13 +327,13 @@ void hugo::export_custom(const fs::path & path, int64_t start_date, int64_t end_
                 const auto & d2 = std::get<2>(it);
                 const auto name_key = get_surname_key(d1.name, d2.name);
                 const auto points_key = get_points_key(points, d1.name, d2.name);
-                ds_assert(couples_sorted_by_name.find(name_key) == couples_sorted_by_name.end());
-                ds_assert(couples_sorted_by_points.find(name_key) == couples_sorted_by_points.end());
+                ds_assert(!couples_sorted_by_name.contains(name_key));
+                ds_assert(!couples_sorted_by_points.contains(name_key));
                 couples_sorted_by_name[name_key] = it;
                 couples_sorted_by_points[points_key] = it;
             }
 
-            f.h4(n.title)
+            f.h4(fmt::format("{} ({})", n.title, group_couples_all.size()))
                 .couples_header(print_points);
 
             for (const auto & it : (sort_points ? couples_sorted_by_points : couples_sorted_by_name))
@@ -407,7 +407,7 @@ void hugo::export_custom(const fs::path & path, int64_t start_date, int64_t end_
                 dancers_sorted_by_points[points_key] = it;
             }
 
-            f.h4(n.title)
+            f.h4(fmt::format("{} ({})", n.title, group_dancers_all.size()))
                 .dancers_header(print_points);
 
             for (const auto & it : (sort_points ? dancers_sorted_by_points : dancers_sorted_by_name))
@@ -491,11 +491,51 @@ void hugo::export_all_dancers(const fs::path & path, const std::string & url, in
 
     const auto unique_couples = _db.count<db::couple>(
         where(not is_null(&db::couple::dancer_id1) and not is_null(&db::couple::dancer_id2)));
-    const auto unique_d1 = _db.count<db::couple>(
-        where(is_null(&db::couple::dancer_id1)));
-    const auto unique_d2 = _db.count<db::couple>(
-        where(is_null(&db::couple::dancer_id2)));
-    const auto unique_solo = unique_d1 + unique_d2;
+    const auto unique_solo = [&]
+    {
+        const auto all_d1 = _db.get_all<db::couple>(
+            where(is_null(&db::couple::dancer_id2)));
+        const auto all_d2 = _db.get_all<db::couple>(
+            where(is_null(&db::couple::dancer_id1)));
+
+        std::unordered_set<int64_t> uniques;
+        uniques.reserve(all_d1.size() + all_d2.size());
+
+        for (const auto id : all_d1
+                | std::views::transform([](const db::couple & c)
+                    {
+                        return c.dancer_id1;
+                    })
+                | std::views::filter([](const std::optional<int64_t> & v)
+                    {
+                        return v.has_value();
+                    })
+                | std::views::transform([](const std::optional<int> & v)
+                    {
+                        return v.value();
+                    }))
+        {
+            uniques.insert(id);
+        }
+        for (const auto id : all_d2
+                | std::views::transform([](const db::couple & c)
+                    {
+                        return c.dancer_id2;
+                    })
+                | std::views::filter([](const std::optional<int64_t> & v)
+                    {
+                        return v.has_value();
+                    })
+                | std::views::transform([](const std::optional<int> & v)
+                    {
+                        return v.value();
+                    }))
+        {
+            uniques.insert(id);
+        }
+
+        return static_cast<int64_t>(uniques.size());
+    }();
     const auto total_exists = _db.count<db::result>();
 
     f.raw(fmt::format("Пары: {}", unique_couples)).br(2);
@@ -505,9 +545,8 @@ void hugo::export_all_dancers(const fs::path & path, const std::string & url, in
 
     const auto dancers_dir = _output / s_dancers_dir;
     fs::create_directories(dancers_dir);
-    for (const auto & it : sorted)
+    for (const auto & [_, d] : sorted)
     {
-        const auto & d = it.second;
         const auto hash = hash_dancer(d);
         const auto & dancer_url = fmt::format("{}/{}/{}", _root_url, s_dancers_dir, hash);
         const auto & dancer_path = dancers_dir / fmt::format("{}.md", hash);

@@ -10,11 +10,12 @@
 #include "parser/manifest/manifest_parser.h"
 #include "parser/text/ranking_parser.h"
 #include "validator/names_validator.h"
+#include "validator/age_validator.h"
 
 
 namespace
 {
-constexpr const auto s_results_path = "data/input/text";
+constexpr const auto s_results_path = "data";
 constexpr const auto s_output_path = "../content/pages/db";
 } // namespace
 
@@ -95,8 +96,11 @@ int main()
         }
 
         {
-            validator::names_validator v{db};
-            v.validate();
+            validator::names_validator names{db};
+            names.validate();
+
+            validator::age_validator age{db};
+            age.validate();
         }
     }
     catch (const std::exception & ex)
