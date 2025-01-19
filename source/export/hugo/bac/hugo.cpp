@@ -510,7 +510,7 @@ void hugo::export_all_dancers(const fs::path & path, const std::string & url, in
                     {
                         return v.has_value();
                     })
-                | std::views::transform([](const std::optional<int> & v)
+                | std::views::transform([](const std::optional<size_t> & v)
                     {
                         return v.value();
                     }))
@@ -526,7 +526,7 @@ void hugo::export_all_dancers(const fs::path & path, const std::string & url, in
                     {
                         return v.has_value();
                     })
-                | std::views::transform([](const std::optional<int> & v)
+                | std::views::transform([](const std::optional<size_t> & v)
                     {
                         return v.value();
                     }))

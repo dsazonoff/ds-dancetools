@@ -123,11 +123,11 @@ void bac::proceed_results_split(const std::vector<result> & results, const std::
         }
     }
 
-    const auto expected_participants = std::accumulate(splits.begin(), splits.end(), 0, [](int n, const auto& split)
+    const auto expected_participants = std::accumulate(splits.begin(), splits.end(), static_cast<size_t>(0), [](size_t n, const auto& split)
         {
             return split.count + n;
         });
-    if (expected_participants != std::ssize(results))
+    if (expected_participants != results.size())
         throw_error();
     if (result_index != results.size())
         throw_error();
