@@ -227,31 +227,33 @@ std::tuple<std::optional<db::dancer>, std::optional<db::dancer>, db::result, db:
         std::optional<db::dancer> d1 = db::dancer{};
         std::optional<db::dancer> d2 = db::dancer{};
 
-        std::vector<std::string> words;
-        boost::split(words, text, boost::is_any_of(" /"));
-        if (words.size() != 6)
-            throw std::logic_error{""};
-        std::for_each(words.begin(), words.end(), [](auto & w)
-            {
-                if (w == "-")
-                    w.clear();
-            });
+        std::vector<std::string> names;
+        split_regex(names, text, boost::regex(" / "));
+        if (names.size() != 2)
+            throw std::logic_error{fmt::format("Invalid names: {}", text)};
 
-        static const auto build_name = [](std::initializer_list<std::string> list)
+        static const auto get_fio = [](const std::string& token)
         {
-            std::vector<std::string> v;
-            for (const auto & w : list)
-                if (!w.empty())
-                    v.push_back(w);
-            return boost::join(v, " ");
+            if (token == "- -")
+                return std::tuple<std::string, std::string>{};
+
+            const auto pos = token.rfind(' ');
+            if (pos == std::string::npos)
+                throw std::logic_error{fmt::format("Invalid name: {}", token)};
+            const auto& name = token.substr(0, pos);
+            const auto& surname = token.substr(pos + 1);
+
+            return std::tuple{name, surname};
         };
 
-        d1->name = build_name({words[1], words[0]});
-        d2->name = build_name({words[5], words[4]});
+        const auto t1 = get_fio(names[0]);
+        const auto t2 = get_fio(names[1]);
+        d1->name = fmt::format("{} {}", std::get<1>(t1), std::get<0>(t1));
+        d2->name = fmt::format("{} {}", std::get<1>(t2), std::get<0>(t2));
 
-        if (d1->name.empty())
+        if (d1->name == " ")
             d1 = std::nullopt;
-        if (d2->name.empty())
+        if (d2->name == " ")
             d2 = std::nullopt;
         ds_assert(d1.has_value() || d2.has_value());
 

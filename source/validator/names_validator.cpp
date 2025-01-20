@@ -50,9 +50,25 @@ names_validator::names_validator(const std::shared_ptr<db::db> & db)
 
     for (const auto & d : _db.iterate<db::dancer>())
     {
+        static const auto get_fio = [](const std::string& token)
+        {
+            if (token == "- -")
+                return std::tuple<std::string, std::string>{};
+
+            const auto pos = token.rfind(' ');
+            if (pos == std::string::npos)
+                throw std::logic_error{fmt::format("Invalid name: {}", token)};
+            const auto& name = token.substr(0, pos);
+            const auto& surname = token.substr(pos + 1);
+
+            return std::tuple{name, surname};
+        };
+
         std::vector<std::string> words;
         words.reserve(2);
-        boost::split(words, d.name, boost::is_any_of(" "));
+        const auto t = get_fio(d.name);
+        words.emplace_back(std::get<0>(t));
+        words.emplace_back(std::get<1>(t));
         assert(words.size() == 2);
         _names.try_emplace(d.name, std::make_tuple(conv.from_bytes(words[0]), conv.from_bytes(words[1])));
     }
