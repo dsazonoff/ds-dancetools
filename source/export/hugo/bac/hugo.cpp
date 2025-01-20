@@ -356,7 +356,7 @@ void hugo::export_custom(const fs::path & path, int64_t start_date, int64_t end_
         for (const auto & g : groups)
         {
             const auto & n = _db.get<db::group_name>(g.group_name_id);
-            if (_solo_groups.find(n.name) == _solo_groups.end())
+            if (!_solo_groups.contains(n.name))
                 continue;
 
             const auto & all_points = _db.get_all<db::bac_points>(
@@ -393,7 +393,7 @@ void hugo::export_custom(const fs::path & path, int64_t start_date, int64_t end_
                 points_all.emplace_back(points);
             }
 
-            std::sort(points_all.begin(), points_all.end(), std::greater<>());
+            std::ranges::sort(points_all, std::greater<>());
 
             std::map<std::string, dancer_t, lexicographical_compare> dancers_sorted_by_name;
             std::map<std::string, dancer_t, lexicographical_compare> dancers_sorted_by_points;
@@ -410,9 +410,9 @@ void hugo::export_custom(const fs::path & path, int64_t start_date, int64_t end_
             f.h4(fmt::format("{} ({})", n.title, group_dancers_all.size()))
                 .dancers_header(print_points);
 
-            for (const auto & it : (sort_points ? dancers_sorted_by_points : dancers_sorted_by_name))
+            for (const auto & val : (sort_points ? dancers_sorted_by_points : dancers_sorted_by_name) | std::views::values)
             {
-                const auto & [d, b_s, points] = it.second;
+                const auto & [d, b_s, points] = val;
                 if (print_points)
                     f.dancer(d.name, points);
                 else

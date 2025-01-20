@@ -79,7 +79,6 @@ void override_bac::set_config(const fs::path & path)
                     obj.at("from_group").as_string().c_str(),
                 };
                 _rules.emplace_back(data);
-                continue;
             }
         }
     }
@@ -195,6 +194,12 @@ void override_bac::on_remove(const override_bac::remove_dancer & data, int64_t s
             c(&bac_result::group_id) == from.id
             and in(&bac_result::dancer_id, d_ids)
             and in(&bac_result::competition_id, comp_ids)));
+    _db.remove_all<bac_points>(
+        where(
+            c(&bac_points::group_id) == from.id
+            and in(&bac_points::dancer_id, d_ids)
+            and c(&bac_points::start_date) >= start_date
+            and c(&bac_points::end_date) <= end_date));
 }
 
 void override_bac::on_add_points(const override_bac::add_points & data, int64_t start_date, int64_t end_date)
@@ -242,10 +247,10 @@ void override_bac::on_remove(const override_bac::remove_couple & data, int64_t s
     const auto & gn_from = _db.get_all<group_name>(
         where(c(&group_name::name) == data.from_group));
     ds_assert(gn_from.size() == 1);
-//    const auto & g_from = _db.get_all<group>(
-//        where(c(&group::group_name_id) == gn_from[0].id));
-//    ds_assert(g_from.size() == 1);
-//    const auto & from = g_from[0];
+    //    const auto & g_from = _db.get_all<group>(
+    //        where(c(&group::group_name_id) == gn_from[0].id));
+    //    ds_assert(g_from.size() == 1);
+    //    const auto & from = g_from[0];
 
     const auto & competitions = _db.get_all<competition>(
         where(
