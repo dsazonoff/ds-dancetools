@@ -61,6 +61,8 @@ cb::group_split ranking::split_callback()
         const auto & names = _db.get_all<group_name>(where(c(&group_name::name) == gn.name));
         ds_assert(names.size() == 1);
         const auto & groups = _db.get_all<group>(where(c(&group::group_name_id) == names[0].id));
+        if (groups.empty())
+            return;
         ds_assert(groups.size() == 1);
         const auto & g = groups[0];
 

@@ -77,7 +77,7 @@ void bac::proceed_group(const group & gr)
         || last_place != static_cast<int64_t>(results.size()))
     {
         const auto & comp_name = _ctx.competition.title;
-        const auto & gr_name = _db.get<group_name>(gr.id).title;
+        const auto & gr_name = _db.get<group_name>(gr.group_name_id).title;
         std::stringstream date;
         date << _ctx.competition.start_date;
         if (_ctx.competition.start_date != _ctx.competition.end_date)

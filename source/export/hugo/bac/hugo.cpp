@@ -578,6 +578,8 @@ void hugo::export_dancer(const fs::path & path, const std::string & url, const d
         const auto & groups = _db.get_all<db::group>(
             where(c(&db::group::group_name_id) == gr_name.id),
             limit(1));
+        if (groups.empty())
+            continue;
         ds_assert(groups.size() == 1);
         const auto & g = groups[0];
 
