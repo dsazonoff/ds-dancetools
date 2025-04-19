@@ -32,6 +32,10 @@ int main()
         const std::locale loc = generator("ru_RU.UTF-8");
         std::locale::global(loc);
 
+        const auto mgr = boost::locale::localization_backend_manager::global();
+        const auto backends = mgr.get_all_backends();
+        ds_assert(std::ranges::find(backends, "icu") != backends.end());
+
         const auto detect_year = []()
         {
             std::set<std::string> dirs;

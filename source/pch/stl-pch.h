@@ -45,4 +45,10 @@
 
 namespace fs = std::filesystem;
 
-#define ds_assert assert
+#define ds_assert(expr) \
+    do{ \
+        if (expr) break; \
+        assert(expr); \
+        const auto msg = fmt::format("Assertion failed: {} at: {}:{} ({})", #expr, __FILE__, __LINE__, __FUNCTION__); \
+        throw std::runtime_error(msg); \
+    }while(false)

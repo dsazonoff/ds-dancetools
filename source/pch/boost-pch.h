@@ -4,8 +4,6 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/regex.hpp>
 #include <boost/exception/all.hpp>
-#include <boost/filesystem.hpp>
-#include <boost/format.hpp>
 #include <boost/json.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/locale.hpp>
@@ -14,8 +12,6 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/range.hpp>
 #include <boost/regex.hpp>
-#include <boost/shared_ptr.hpp>
-#include <boost/smart_ptr/make_shared.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/uuid/detail/sha1.hpp>
 #include <boost/uuid/name_generator_sha1.hpp>

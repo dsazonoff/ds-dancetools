@@ -1,6 +1,9 @@
 # Build output
 build/
 .idea/
+_thirdparty/
 
 # Misc
 .DS_Store
+
+.PVS-Studio/
