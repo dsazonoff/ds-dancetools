@@ -1,0 +1,3 @@
+[submodule "bootstrap"]
+	path = bootstrap
+	url = https://gitlab.com/mydancesport/mds-bootstrap.git
