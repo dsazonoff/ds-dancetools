@@ -3,7 +3,7 @@
 project("ds-dancetools" LANGUAGES CXX)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
-list(APPEND CMAKE_PREFIX_PATH "./_thirdparty/${CMAKE_SYSTEM_PROCESSOR}")
+list(APPEND CMAKE_PREFIX_PATH "./thirdparty/arm64-osx")
 
 # Options
 
