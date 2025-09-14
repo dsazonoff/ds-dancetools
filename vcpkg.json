@@ -3,7 +3,7 @@
   "name": "ds-dancetools",
   "version": "0.1",
   "homepage": "https://github.com/dsazonoff",
-  "builtin-baseline": "095a29ce59608465032c3747307dd0009b3e089c",
+  "builtin-baseline": "62efe42f53b1886a20cbeb22ee9a27736d20f149",
   "dependencies": [
     {
       "name": "boost-algorithm",
@@ -62,7 +62,7 @@
     },
     {
       "name": "fmt",
-      "version>=": "11.0.2#1"
+      "version>=": "11.2.1"
     },
     {
       "name": "icu",
@@ -124,7 +124,7 @@
     },
     {
       "name": "fmt",
-      "version": "11.0.2#1"
+      "version": "11.2.1"
     },
     {
       "name": "icu",
