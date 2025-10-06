@@ -96,7 +96,7 @@ void bac::proceed_group(const group & gr)
         return;
     }
 
-    ds_assert(splits.size() == 3);
+    ds_assert(!splits.empty());
     proceed_results_split(results, splits);
 }
 

@@ -188,10 +188,32 @@ void ranking_parser::parse_results_file(const fs::path & path)
 
     ds_assert(_result_callback);
     _ctx.file = path;
-    for (std::string line; !!std::getline(is, line);)
+    std::vector<db::bac_group_split> splits;
+    int64_t counter = {};
+    int line_number = 1;
+    for (std::string line; !!std::getline(is, line); ++line_number)
     {
+        if (line.empty())
+        {
+            if (counter == 0)
+                throw std::logic_error{fmt::format("Could not read file: {}, line: {}", path.generic_string(), line_number)};
+            const int64_t place = std::ssize(splits) + 1;
+            splits.emplace_back(0, _ctx.competition.id, _ctx.group.id, place, counter);
+            counter = 0;
+            continue;
+        }
         auto [dancer1, dancer2, result, city] = parse_line(line);
         _result_callback(_ctx.competition, _ctx.group, db::group_name{0, group_name, std::string{}}, std::move(dancer1), std::move(dancer2), result, std::move(city));
+        ++counter;
+    }
+    if (counter > 0)
+    {
+        const int64_t place = std::ssize(splits) + 1;
+        splits.emplace_back(0, _ctx.competition.id, _ctx.group.id, place, counter);
+    }
+    if (!splits.empty())
+    {
+        _split_callback(_ctx.competition, db::group_name{0, group_id, {}}, splits);
     }
 }
 

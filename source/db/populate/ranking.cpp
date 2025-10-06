@@ -148,9 +148,14 @@ void ranking::add_result(result & r)
     update_or_insert(results, r);
 }
 
-void ranking::add_split(bac_group_split & r)
+void ranking::add_split(bac_group_split & s)
 {
-    r.id = _db.insert(r);
+    const auto & splits = _db.get_all<bac_group_split>(
+        where(
+            c(&bac_group_split::competition_id) == s.competition_id
+            and c(&bac_group_split::group_id) == s.group_id
+            and c(&bac_group_split::place) == s.place));
+    update_or_insert(splits, s);
 }
 
 

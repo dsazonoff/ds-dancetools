@@ -21,7 +21,7 @@ private:
     void add_dancer(std::optional<dancer> & d);
     void add_couple(couple & cpl);
     void add_result(result & r);
-    void add_split(bac_group_split & r);
+    void add_split(bac_group_split & s);
 };
 
 
