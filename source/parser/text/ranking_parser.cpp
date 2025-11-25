@@ -213,6 +213,10 @@ void ranking_parser::parse_results_file(const fs::path & path)
     }
     if (!splits.empty())
     {
+        constexpr auto minimum_splits = 3; // Should be not less than 3 places
+        for (auto i = splits.size(); i < minimum_splits; ++i)
+            splits.emplace_back(0, _ctx.competition.id, _ctx.group.id, i + 1, 0);
+
         _split_callback(_ctx.competition, db::group_name{0, group_id, {}}, splits);
     }
 }
