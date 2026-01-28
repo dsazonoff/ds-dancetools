@@ -1,60 +1,60 @@
 {
   "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.json",
   "name": "ds-dancetools",
-  "version": "0.1",
+  "version": "0.2",
   "homepage": "https://github.com/dsazonoff",
-  "builtin-baseline": "62efe42f53b1886a20cbeb22ee9a27736d20f149",
+  "builtin-baseline": "a2a478a93d582a4b395a4dc4b7052bfcb42c1f8e",
   "dependencies": [
     {
       "name": "boost-algorithm",
-      "version>=": "1.88.0"
+      "version>=": "1.90.0#1"
     },
     {
       "name": "boost-exception",
-      "version>=": "1.88.0"
+      "version>=": "1.90.0#1"
     },
     {
       "name": "boost-json",
-      "version>=": "1.88.0"
+      "version>=": "1.90.0#1"
     },
     {
       "name": "boost-lexical-cast",
-      "version>=": "1.88.0"
+      "version>=": "1.90.0#1"
     },
     {
       "name": "boost-locale",
-      "version>=": "1.88.0",
+      "version>=": "1.90.0#1",
       "features": [
         "icu"
       ]
     },
     {
       "name": "boost-program-options",
-      "version>=": "1.88.0"
+      "version>=": "1.90.0#1"
     },
     {
       "name": "boost-property-tree",
-      "version>=": "1.88.0"
+      "version>=": "1.90.0#1"
     },
     {
       "name": "boost-range",
-      "version>=": "1.88.0"
+      "version>=": "1.90.0#1"
     },
     {
       "name": "boost-regex",
-      "version>=": "1.88.0"
+      "version>=": "1.90.0#1"
     },
     {
       "name": "boost-tokenizer",
-      "version>=": "1.88.0"
+      "version>=": "1.90.0#1"
     },
     {
       "name": "boost-uuid",
-      "version>=": "1.88.0"
+      "version>=": "1.90.0#1"
     },
     {
       "name": "libiconv",
-      "version>=": "1.18#1"
+      "version>=": "1.18#3"
     },
     {
       "name": "sqlite-orm",
@@ -62,61 +62,57 @@
     },
     {
       "name": "fmt",
-      "version>=": "11.2.1"
-    },
-    {
-      "name": "icu",
-      "version>=": "74.2#6"
+      "version>=": "12.1.0"
     }
   ],
   "overrides": [
     {
       "name": "boost-algorithm",
-      "version": "1.88.0"
+      "version": "1.90.0#1"
     },
     {
       "name": "boost-exception",
-      "version": "1.88.0"
+      "version": "1.90.0#1"
     },
     {
       "name": "boost-json",
-      "version": "1.88.0"
+      "version": "1.90.0#1"
     },
     {
       "name": "boost-lexical-cast",
-      "version": "1.88.0"
+      "version": "1.90.0#1"
     },
     {
       "name": "boost-locale",
-      "version": "1.88.0"
+      "version": "1.90.0#1"
     },
     {
       "name": "boost-program-options",
-      "version": "1.88.0"
+      "version": "1.90.0#1"
     },
     {
       "name": "boost-property-tree",
-      "version": "1.88.0"
+      "version": "1.90.0#1"
     },
     {
       "name": "boost-range",
-      "version": "1.88.0"
+      "version": "1.90.0#1"
     },
     {
       "name": "boost-regex",
-      "version": "1.88.0"
+      "version": "1.90.0#1"
     },
     {
       "name": "boost-tokenizer",
-      "version": "1.88.0"
+      "version": "1.90.0#1"
     },
     {
       "name": "boost-uuid",
-      "version": "1.88.0"
+      "version": "1.90.0#1"
     },
     {
       "name": "libiconv",
-      "version": "1.18#1"
+      "version": "1.18#3"
     },
     {
       "name": "sqlite-orm",
@@ -124,11 +120,7 @@
     },
     {
       "name": "fmt",
-      "version": "11.2.1"
-    },
-    {
-      "name": "icu",
-      "version": "74.2#6"
+      "version": "12.1.0"
     }
   ]
 }

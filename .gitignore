@@ -1,7 +1,8 @@
 # Build output
 build/
 .idea/
-third_party
+third-party
+distr/
 
 # Misc
 .DS_Store
