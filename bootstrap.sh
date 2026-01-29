@@ -2,4 +2,5 @@
 
 set -euo pipefail
 
-sh ./bootstrap/bootstrap.sh "$@"
+./bootstrap/bootstrap.sh --triplet=arm64-osx
+./bootstrap/bootstrap.sh --triplet=x64-osx

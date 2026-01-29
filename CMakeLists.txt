@@ -3,9 +3,15 @@
 project("ds-dancetools" LANGUAGES CXX)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
-list(APPEND CMAKE_PREFIX_PATH "./third-party/arm64")
-
-# Options
+if("${CMAKE_PREFIX_PATH}" STREQUAL "")
+    if(APPLE)
+        set(CMAKE_PREFIX_PATH "third-party/arm64-osx")
+    elseif(WIN32)
+        set(CMAKE_PREFIX_PATH "third-party/x64-windows-static")
+    elseif(UNIX)
+        message(FATAL_ERROR "Not supported")
+    endif()
+endif ()
 
 # Project configuration
 set(CMAKE_CXX_EXTENSIONS OFF)
