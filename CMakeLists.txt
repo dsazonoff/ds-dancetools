@@ -8,6 +8,7 @@ if("${CMAKE_PREFIX_PATH}" STREQUAL "")
         set(CMAKE_PREFIX_PATH "third-party/arm64-osx")
     elseif(WIN32)
         set(CMAKE_PREFIX_PATH "third-party/ARM64")
+        list(APPEND ICU_ROOT "third-party/ARM64") # Workaround for ICU
     elseif(UNIX)
         message(FATAL_ERROR "Not supported")
     endif()
