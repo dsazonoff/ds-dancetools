@@ -16,7 +16,7 @@
 namespace
 {
 constexpr const auto s_results_path = "data";
-constexpr const auto s_output_path = "../content/pages/db";
+constexpr const auto s_output_path = "../sportdance-by/content/pages/db";
 } // namespace
 
 
