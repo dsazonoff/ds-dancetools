@@ -151,14 +151,16 @@ std::map<std::string, std::vector<db::bac_group_split>> ranking_parser::parse_gr
         for (const auto & obj : groups)
         {
             const std::string id_name = obj.at("id").as_string().c_str();
-            const auto & results = obj.at("split");
-
             std::vector<db::bac_group_split> gr;
-            int64_t place = 1;
-            for (const auto & r : results.as_array())
+            if (obj.as_object().contains("split"))
             {
-                gr.emplace_back(db::bac_group_split{0, 0, 0, place, r.as_int64()});
-                ++place;
+                const auto & results = obj.at("split");
+                int64_t place = 1;
+                for (const auto & r : results.as_array())
+                {
+                    gr.emplace_back(db::bac_group_split{0, 0, 0, place, r.as_int64()});
+                    ++place;
+                }
             }
 
             g.try_emplace(id_name, std::move(gr));
