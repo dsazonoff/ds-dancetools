@@ -16,6 +16,7 @@ public:
     {
         move,
         remove,
+        rename,
     };
 
     struct move_dancer final
@@ -49,7 +50,13 @@ public:
         std::string from_group;
     };
 
-    using data_t = std::variant<move_dancer, remove_dancer, remove_couple, add_points>;
+    struct rename_dancer final
+    {
+        std::string old_name;
+        std::string new_name;
+    };
+
+    using data_t = std::variant<move_dancer, remove_dancer, remove_couple, add_points, rename_dancer>;
 
 public:
     explicit override_bac(const std::shared_ptr<db> & db);
@@ -62,6 +69,7 @@ private:
     void on_remove(const remove_dancer & data, int64_t start_date, int64_t end_date);
     void on_add_points(const add_points & data, int64_t start_date, int64_t end_date);
     void on_remove(const remove_couple & data, int64_t start_date, int64_t end_date);
+    void on_rename(const rename_dancer & data, int64_t start_date, int64_t end_date);
 
 private:
     std::vector<data_t> _rules;

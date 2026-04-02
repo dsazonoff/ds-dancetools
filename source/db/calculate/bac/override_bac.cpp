@@ -39,7 +39,7 @@ void override_bac::set_config(const fs::path & path)
                     obj.at("from_group").as_string().c_str(),
                     obj.at("to_group").as_string().c_str(),
                 };
-                _rules.emplace_back(data);
+                _rules.emplace_back(std::move(data));
                 continue;
             }
             if (action == "remove")
@@ -50,7 +50,7 @@ void override_bac::set_config(const fs::path & path)
                     obj.at("start_date").as_int64(),
                     obj.at("end_date").as_int64(),
                 };
-                _rules.emplace_back(data);
+                _rules.emplace_back(std::move(data));
                 continue;
             }
             if (action == "add_points")
@@ -62,10 +62,20 @@ void override_bac::set_config(const fs::path & path)
                     obj.at("end_date").as_int64(),
                     obj.at("points").as_double(),
                 };
-                _rules.emplace_back(data);
+                _rules.emplace_back(std::move(data));
+                continue;
+            }
+            if (action == "rename")
+            {
+                rename_dancer data = {
+                    obj.at("old_name").as_string().c_str(),
+                    obj.at("new_name").as_string().c_str(),
+                };
+                _rules.emplace_back(std::move(data));
                 continue;
             }
         }
+
         const auto couples = json.at("couples").as_array();
         _rules.reserve(_rules.size() + couples.size());
         for (const auto & obj : couples)
@@ -113,6 +123,10 @@ void override_bac::apply(int64_t start_date, int64_t end_date)
                        [&](const remove_couple & data)
                        {
                            on_remove(data, start_date, end_date);
+                       },
+                       [&](const rename_dancer & data)
+                       {
+                           on_rename(data, start_date, end_date);
                        },
                    },
             r);
@@ -294,6 +308,15 @@ void override_bac::on_remove(const override_bac::remove_couple & data, int64_t s
     //            and is_not_null(&couple::dancer_id2)
     //            and in(&couple::dancer_id2, d_ids)
     //            and c(&couple::is_solo) == false));
+}
+
+void override_bac::on_rename(const rename_dancer & data, int64_t start_date, int64_t end_date)
+{
+    (void)start_date;
+    (void)end_date;
+
+    _db.update_all(
+        set(c(&dancer::name) = replace(&dancer::name, data.old_name, data.new_name)));
 }
 
 } // namespace ds::db
