@@ -65,6 +65,8 @@ int main()
 
         // auto db = std::make_shared<db::db>("build/db.sqlite");
         auto db = std::make_shared<db::db>(":memory:");
+        const auto tr = (*db)().transaction_guard();
+
         db::manifest manifest{db};
         db::ranking ranking{db};
 
