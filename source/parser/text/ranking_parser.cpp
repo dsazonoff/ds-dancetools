@@ -208,14 +208,15 @@ void ranking_parser::parse_results_file(const fs::path & path)
         _result_callback(_ctx.competition, _ctx.group, db::group_name{0, group_name, std::string{}}, std::move(dancer1), std::move(dancer2), result, std::move(city));
         ++counter;
     }
-    if (counter > 0)
+    if (counter > 0 && !splits.empty())
     {
         const int64_t place = std::ssize(splits) + 1;
         splits.emplace_back(0, _ctx.competition.id, _ctx.group.id, place, counter);
     }
     if (!splits.empty())
     {
-        constexpr auto minimum_splits = 3; // Should be not less than 3 places
+        constexpr auto minimum_splits = 3; // Should not be less than 3 places
+        ds_assert(splits.size() >= minimum_splits);
         for (auto i = splits.size(); i < minimum_splits; ++i)
             splits.emplace_back(0, _ctx.competition.id, _ctx.group.id, i + 1, 0);
 
